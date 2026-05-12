@@ -28,7 +28,7 @@ from telegram.ext import (
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8722817188:AAGETX1eo79Y8OWs1hAQDseKN9tVizfJ9oo")
 GAME_URL   = os.getenv("GAME_URL",  "https://yourdomain.com/farmverse.html")
 ADMIN_ID   = int(os.getenv("ADMIN_ID", "0"))
 
