@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FarmVerse 🌾</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --green:#2d8a4e; --green-l:#4caf72; --green-d:#1a5c33;
+  --gold:#f5a623; --gold-d:#c47d00; --gold-l:#ffd166;
+  --brown:#7b4f2e; --sky:#87ceeb;
+  --cream:#fef9e7; --red:#e53935; --red-l:#ff6b6b;
+  --purple:#7c3aed; --purple-l:#a855f7; --purple-ll:#c084fc;
+  --blue:#1a6cf5; --teal:#0d9488; --orange:#f97316;
+  --bg:#111d11; --surface:#1c2e1c; --surface2:#253625;
+  --surface3:#2e4030; --card:#1a2e1a;
+  --text:#e8f5e9; --text2:#86a98a; --text3:#5a7d5e;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --glow:rgba(77,175,74,0.25); --gold-glow:rgba(245,166,35,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+
+/* ─── TOPBAR ─── */
+.topbar{background:linear-gradient(135deg,#0d1e0d,#162416);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(77,175,74,0.3);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{font-family:'Fredoka One';font-size:20px;color:var(--gold);letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.logo-v{color:var(--green-l);font-size:14px;background:var(--green-d);padding:2px 7px;border-radius:10px;font-family:'Nunito';font-weight:900}
+.res-row{display:flex;gap:6px}
+.res-chip{background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:800;display:flex;align-items:center;gap:4px;color:var(--text)}
+.res-chip.gold-chip{border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.07)}
+.res-chip.gem-chip{border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.07)}
+.res-chip .ico{font-size:13px}
+
+/* ─── LEVEL BADGE ─── */
+.level-badge{background:linear-gradient(135deg,var(--green-d),#0a3318);border:1px solid var(--green);border-radius:10px;padding:3px 8px;font-size:11px;font-weight:900;color:var(--green-l);white-space:nowrap}
+
+/* ─── TABS ─── */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:62px;padding:9px 4px;text-align:center;font-size:10px;font-weight:800;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;position:relative}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab .ti{font-size:17px;display:block;margin-bottom:1px}
+.tab-badge{position:absolute;top:5px;right:8px;background:var(--red);color:#fff;font-size:9px;font-weight:900;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}
+
+/* ─── PAGES ─── */
+.page{display:none;padding:14px;padding-bottom:90px}
+.page.active{display:block}
+
+/* ─── SECTION TITLE ─── */
+.sec{font-size:11px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ─── FARM HEADER ─── */
+.farm-header{background:linear-gradient(160deg,#162416,#0d1a0d);border:1px solid rgba(77,175,74,0.25);border-radius:16px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.avatar-wrap{position:relative;flex-shrink:0}
+.avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--gold));display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid var(--gold);animation:float 3s ease-in-out infinite}
+.avatar-nft{position:absolute;bottom:-2px;right:-2px;font-size:16px;background:var(--bg);border-radius:50%;padding:1px}
+.farm-info{flex:1;min-width:0}
+.farm-info h2{font-size:15px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.farm-info p{font-size:11px;color:var(--text2);margin-top:1px}
+.xp-bar{background:rgba(255,255,255,0.08);border-radius:6px;height:5px;margin-top:6px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green-l),var(--gold));border-radius:6px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* ─── STATS ─── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center}
+.stat-card .val{font-size:16px;font-weight:900;color:var(--gold)}
+.stat-card .lbl{font-size:9px;color:var(--text2);margin-top:1px;font-weight:700}
+
+/* ─── DAILY QUEST BAR ─── */
+.quest-bar{background:linear-gradient(135deg,#1a2a10,#0d1e0a);border:1px solid rgba(77,175,74,0.3);border-radius:14px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.quest-bar:active{transform:scale(0.98)}
+.quest-ico{font-size:24px;flex-shrink:0}
+.quest-info{flex:1}
+.quest-info h4{font-size:13px;font-weight:800;color:var(--text)}
+.quest-info p{font-size:11px;color:var(--text2);margin-top:2px}
+.quest-prog-wrap{flex-shrink:0;text-align:center}
+.quest-prog{font-size:13px;font-weight:900;color:var(--green-l)}
+
+/* ─── BOOST BANNER ─── */
+.boost-banner{background:linear-gradient(135deg,#2a1060,#1a0040);border:1px solid rgba(168,85,247,0.4);border-radius:14px;padding:11px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;transition:transform .1s}
+.boost-banner:active{transform:scale(0.98)}
+
+/* ─── PLOT GRID ─── */
+.plot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.plot{aspect-ratio:1;border-radius:12px;background:var(--surface2);border:2px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .1s,border-color .2s;overflow:hidden}
+.plot:active{transform:scale(0.92)}
+.plot.locked{opacity:.35;cursor:default}
+.plot.growing{border-color:var(--green);background:#152015}
+.plot.ready{border-color:var(--gold);background:#1e1800;animation:pulse-ready 1.4s infinite}
+.plot.empty{border-color:rgba(255,255,255,0.05)}
+.plot-emoji{font-size:26px;line-height:1}
+.plot-timer{font-size:9px;font-weight:800;color:var(--gold);margin-top:2px;font-family:monospace}
+.plot-progress{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,200,0,0.15)}
+.plot-progress-fill{height:100%;background:var(--green-l);transition:width 1s linear}
+.plot-lock{font-size:18px}
+.plot-lock-price{font-size:8px;font-weight:800;color:var(--gold);margin-top:2px}
+@keyframes pulse-ready{0%,100%{box-shadow:0 0 0 0 var(--gold-glow)}50%{box-shadow:0 0 0 7px transparent}}
+
+/* ─── HARVEST BTN ─── */
+.harvest-all-btn{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,var(--gold),#d4860a);border:none;color:#2d1600;font-family:'Fredoka One';font-size:16px;letter-spacing:.5px;cursor:pointer;transition:transform .1s,opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
+.harvest-all-btn:active{transform:scale(0.97)}
+.harvest-all-btn:disabled{opacity:.35;cursor:default}
+
+/* ─── SHOP / MARKET ─── */
+.shop-filter{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:4px}
+.shop-filter::-webkit-scrollbar{display:none}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'Nunito';font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.filter-btn.active{background:var(--green-d);border-color:var(--green);color:var(--green-l)}
+.shop-grid{display:flex;flex-direction:column;gap:8px}
+.shop-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;display:flex;align-items:center;gap:11px;transition:border-color .2s}
+.shop-item.featured{border-color:rgba(245,166,35,0.4);background:#1c1800}
+.shop-item.web3-item{border-color:rgba(168,85,247,0.3);background:#110020}
+.shop-emoji{font-size:36px;flex-shrink:0}
+.shop-info{flex:1;min-width:0}
+.shop-info h3{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shop-info p{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4}
+.shop-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;display:inline-block;margin-bottom:3px}
+.badge-basic{background:#1a3820;color:#7cfc00}
+.badge-p2w{background:#3d2200;color:var(--gold)}
+.badge-nft{background:#1a005c;color:var(--purple-ll)}
+.badge-hot{background:#3d0000;color:var(--red-l)}
+.buy-btn{padding:8px 12px;border-radius:10px;border:none;font-family:'Nunito';font-weight:800;font-size:11px;cursor:pointer;transition:transform .1s;white-space:nowrap;flex-shrink:0}
+.buy-btn:active{transform:scale(0.93)}
+.buy-btn.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#2d1600}
+.buy-btn.btn-gem{background:linear-gradient(135deg,var(--purple),#5b21b6);color:#fff}
+.buy-btn.btn-bnb{background:linear-gradient(135deg,#f0b90b,#d4a009);color:#1a1200}
+.buy-btn.btn-market{background:linear-gradient(135deg,var(--teal),#0f766e);color:#fff}
+.buy-btn.btn-sell{background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff}
+.buy-btn:disabled{opacity:.35;cursor:default}
+
+/* ─── NFT MARKETPLACE ─── */
+.nft-tabs{display:flex;gap:8px;margin-bottom:14px}
+.nft-tab{flex:1;padding:8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:'Nunito';font-weight:700;font-size:12px;cursor:pointer;text-align:center;transition:all .2s}
+.nft-tab.active{background:var(--surface2);border-color:var(--purple-l);color:var(--purple-ll)}
+.nft-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.nft-card{background:linear-gradient(160deg,#140030,#0a1020);border:1px solid rgba(168,85,247,0.3);border-radius:16px;padding:14px;text-align:center;cursor:pointer;transition:transform .2s,border-color .2s;position:relative}
+.nft-card:active{transform:scale(0.96)}
+.nft-card.owned{border-color:rgba(245,166,35,0.6);background:linear-gradient(160deg,#1e1200,#100c00)}
+.nft-card.for-sale{border-color:rgba(13,148,136,0.6);background:linear-gradient(160deg,#001e1c,#000e0c)}
+.nft-card.rare{border-color:rgba(239,68,68,0.5)}
+.nft-rarity{position:absolute;top:8px;left:8px;font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px}
+.rarity-common{background:#1a3020;color:#4ade80}
+.rarity-rare{background:#1a0a30;color:var(--purple-ll)}
+.rarity-epic{background:#300a0a;color:var(--red-l)}
+.rarity-legendary{background:#302000;color:var(--gold)}
+.nft-emoji{font-size:40px;margin:8px 0}
+.nft-name{font-size:12px;font-weight:800;color:var(--text)}
+.nft-bonus{font-size:10px;color:var(--purple-ll);margin-top:3px;line-height:1.4}
+.nft-card.owned .nft-bonus{color:var(--gold-l)}
+.nft-price-tag{margin-top:10px;padding:6px;border-radius:8px;background:rgba(255,255,255,0.05);font-size:11px;font-weight:800;color:var(--purple-ll);display:flex;align-items:center;justify-content:center;gap:5px}
+.nft-card.owned .nft-price-tag{color:#4ade80;background:rgba(74,222,128,0.08)}
+.nft-actions{display:flex;gap:6px;margin-top:8px}
+.nft-actions button{flex:1;padding:6px;border-radius:8px;border:none;font-family:'Nunito';font-weight:800;font-size:10px;cursor:pointer;transition:transform .1s}
+.nft-actions button:active{transform:scale(0.94)}
+.btn-list{background:linear-gradient(135deg,var(--teal),#0f766e);color:#fff}
+.btn-gift{background:linear-gradient(135deg,#d97706,#b45309);color:#fff}
+.nft-sold-badge{position:absolute;top:8px;right:8px;background:var(--teal);color:#fff;font-size:9px;font-weight:900;padding:2px 6px;border-radius:8px}
+
+/* ─── MARKETPLACE PAGE ─── */
+.market-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.market-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center}
+.market-stat .mv{font-size:15px;font-weight:900;color:var(--teal)}
+.market-stat .ml{font-size:9px;color:var(--text2);font-weight:700;margin-top:2px}
+.market-listing{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;display:flex;align-items:center;gap:10px;margin-bottom:8px;transition:border-color .2s}
+.market-listing:active{transform:scale(0.99)}
+.market-listing.mine{border-color:rgba(245,166,35,0.3)}
+.ml-avatar{font-size:32px;flex-shrink:0;width:50px;height:50px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.ml-info{flex:1;min-width:0}
+.ml-info h4{font-size:13px;font-weight:800;color:var(--text)}
+.ml-info p{font-size:11px;color:var(--text2);margin-top:2px}
+.ml-seller{font-size:10px;color:var(--text3);margin-top:3px}
+.ml-price{text-align:right;flex-shrink:0}
+.ml-price .amount{font-size:14px;font-weight:900;color:var(--gold)}
+.ml-price .currency{font-size:10px;color:var(--text2)}
+.ml-price .btn{margin-top:5px}
+
+/* ─── WALLET PAGE ─── */
+.wallet-card{background:linear-gradient(135deg,#0d0025,#1a003d);border:1px solid rgba(168,85,247,0.4);border-radius:18px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden}
+.wallet-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(168,85,247,0.2),transparent);border-radius:50%}
+.wallet-label{font-size:10px;color:var(--purple-ll);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.wallet-addr{font-family:monospace;font-size:12px;color:var(--text);background:rgba(255,255,255,0.07);padding:8px 12px;border-radius:8px;margin:8px 0;word-break:break-all;cursor:pointer;transition:background .2s}
+.wallet-addr:active{background:rgba(255,255,255,0.12)}
+.wallet-balance{font-size:26px;font-weight:900;color:#fff}
+.wallet-balance span{font-size:13px;color:var(--purple-ll)}
+.wallet-sub-bal{font-size:12px;color:var(--text2);margin-top:4px}
+.network-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:8px}
+.badge-bnb{background:rgba(240,185,11,0.15);color:#f0b90b;border:1px solid rgba(240,185,11,0.3)}
+.connect-btn{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,var(--purple),#5b21b6);border:none;color:#fff;font-family:'Fredoka One';font-size:17px;cursor:pointer;transition:transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.connect-btn:active{transform:scale(0.97)}
+.wallet-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.wallet-action{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s}
+.wallet-action:active{transform:scale(0.95)}
+.wallet-action .wa-ico{font-size:22px;margin-bottom:5px}
+.wallet-action .wa-lbl{font-size:11px;font-weight:700;color:var(--text2)}
+
+/* ─── TX LIST ─── */
+.tx-list{display:flex;flex-direction:column;gap:6px}
+.tx-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px}
+.tx-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.tx-icon.in{background:rgba(74,222,128,0.1)}
+.tx-icon.out{background:rgba(239,68,68,0.1)}
+.tx-icon.pending{background:rgba(251,191,36,0.1)}
+.tx-info{flex:1;min-width:0}
+.tx-info h4{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-info p{font-size:10px;color:var(--text2);margin-top:2px}
+.tx-hash{font-family:monospace;font-size:9px;color:var(--text3)}
+.tx-amount{font-size:12px;font-weight:800;flex-shrink:0;text-align:right}
+.tx-amount.in{color:#4ade80}
+.tx-amount.out{color:var(--red-l)}
+.tx-amount.pending{color:#fbbf24}
+
+/* ─── LEADERBOARD ─── */
+.lb-my-rank{background:linear-gradient(135deg,var(--green-d),#0d3318);border:1px solid var(--green);border-radius:14px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.lb-item{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:11px 13px;display:flex;align-items:center;gap:10px;margin-bottom:6px;transition:border-color .2s}
+.lb-item.top1{border-color:var(--gold);background:#1a1400}
+.lb-item.top2{border-color:rgba(192,192,192,0.5)}
+.lb-item.top3{border-color:rgba(160,82,45,0.5)}
+.lb-item.mine{border-color:var(--green);background:#0d1e0d}
+.lb-rank{font-size:20px;font-weight:900;width:28px;text-align:center;flex-shrink:0}
+.lb-avatar{width:38px;height:38px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.lb-data{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-sub{font-size:10px;color:var(--text2);margin-top:2px}
+.lb-score{font-size:13px;font-weight:900;color:var(--gold);flex-shrink:0;text-align:right}
+.lb-score small{display:block;font-size:9px;color:var(--text2);font-weight:700}
+.me-badge{font-size:9px;background:var(--green-d);color:var(--green-l);padding:1px 6px;border-radius:8px;font-weight:700;margin-left:5px}
+
+/* ─── MODALS ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:22px 22px 0 0;padding:18px;width:100%;max-width:430px;transform:translateY(40px);transition:transform .25s;max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 14px}
+.modal h2{font-size:17px;font-weight:900;text-align:center;margin-bottom:3px}
+.modal p.sub{font-size:12px;color:var(--text2);text-align:center;margin-bottom:14px}
+
+/* ─── CROP OPTIONS ─── */
+.crop-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.crop-opt{background:var(--bg);border:2px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.crop-opt:active{transform:scale(0.94)}
+.crop-opt.selected{border-color:var(--green-l);background:#162416}
+.crop-opt .ce{font-size:28px}
+.crop-opt .cn{font-size:10px;font-weight:800;margin-top:3px}
+.crop-opt .ci{font-size:9px;color:var(--text2);margin-top:2px}
+.crop-opt .cr{font-size:10px;color:var(--gold);font-weight:800;margin-top:2px}
+.crop-opt.locked-crop{opacity:.4;cursor:default}
+
+/* ─── SELL MODAL ─── */
+.sell-input-wrap{margin:12px 0}
+.sell-input-wrap label{font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px}
+.sell-input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Nunito';font-size:15px;font-weight:700;outline:none}
+.sell-input:focus{border-color:var(--teal)}
+.sell-fee-info{background:rgba(13,148,136,0.1);border:1px solid rgba(13,148,136,0.3);border-radius:10px;padding:10px 12px;font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+
+/* ─── P2W TIERS ─── */
+.p2w-tier{background:var(--bg);border:2px solid var(--border);border-radius:14px;padding:13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .2s}
+.p2w-tier:active{transform:scale(0.98)}
+.p2w-tier.best{border-color:rgba(245,166,35,0.6);background:#100e00}
+.p2w-ico{font-size:30px;flex-shrink:0}
+.p2w-info{flex:1}
+.p2w-info h4{font-size:13px;font-weight:800}
+.p2w-info p{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.4}
+.p2w-price .amount{font-size:15px;font-weight:900;color:var(--gold)}
+.p2w-price .unit{font-size:9px;color:var(--text2)}
+
+/* ─── BUTTONS ─── */
+.plant-btn{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green-d));border:none;color:#fff;font-family:'Fredoka One';font-size:17px;cursor:pointer;transition:transform .1s}
+.plant-btn:active{transform:scale(0.97)}
+.cancel-btn{width:100%;padding:11px;border-radius:14px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'Nunito';font-weight:700;font-size:13px;cursor:pointer;margin-top:6px}
+.primary-btn{width:100%;padding:13px;border-radius:14px;background:linear-gradient(135deg,var(--teal),#0f766e);border:none;color:#fff;font-family:'Fredoka One';font-size:16px;cursor:pointer;transition:transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.primary-btn:active{transform:scale(0.97)}
+.danger-btn{width:100%;padding:12px;border-radius:14px;background:linear-gradient(135deg,#7f1d1d,#991b1b);border:none;color:#fff;font-family:'Fredoka One';font-size:15px;cursor:pointer;margin-top:8px}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-16px);background:var(--surface2);border:1px solid var(--green);border-radius:20px;padding:9px 18px;font-size:12px;font-weight:800;color:var(--text);z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-overflow:ellipsis;overflow:hidden}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.error{border-color:var(--red);background:#1e0a0a}
+.toast.success{border-color:var(--green);background:#0a1e0a}
+.toast.info{border-color:var(--purple);background:#0d0020}
+
+/* ─── LOADING ─── */
+.loading-screen{position:fixed;inset:0;background:#080e08;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .6s}
+.loading-screen.hidden{opacity:0;pointer-events:none}
+.loading-logo{font-family:'Fredoka One';font-size:44px;color:var(--gold);margin-bottom:6px;animation:float 2s ease-in-out infinite}
+.loading-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
+.loading-tip{font-size:11px;color:var(--text3);margin-top:14px;text-align:center;max-width:220px;line-height:1.5}
+.loading-bar-wrap{width:200px;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.loading-bar{height:100%;background:linear-gradient(90deg,var(--green-l),var(--gold));border-radius:3px;animation:load 2.5s ease-out forwards}
+@keyframes load{from{width:0}to{width:100%}}
+
+/* ─── DAILY CHECK-IN ─── */
+.checkin-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+.checkin-day{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;font-size:9px;font-weight:800;color:var(--text3)}
+.checkin-day .ci-ico{font-size:18px;display:block;margin-bottom:3px}
+.checkin-day .ci-lbl{font-size:10px;color:var(--gold)}
+.checkin-day.done{background:#162416;border-color:var(--green);color:var(--green-l)}
+.checkin-day.today{background:linear-gradient(135deg,var(--green-d),#0a2a10);border-color:var(--gold);box-shadow:0 0 8px var(--gold-glow)}
+.checkin-day.locked{opacity:.3}
+
+/* ─── INFO CARD ─── */
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+.info-card h4{font-size:13px;font-weight:800;margin-bottom:8px}
+.info-card p,.info-row{font-size:12px;color:var(--text2);line-height:1.7}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-row span:last-child{color:var(--text);font-weight:700}
+
+/* ─── ANTI-CHEAT OVERLAY ─── */
+.ban-overlay{position:fixed;inset:0;background:#0a0000;z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px}
+.ban-overlay.show{display:flex}
+.ban-overlay .ban-ico{font-size:64px;margin-bottom:16px}
+.ban-overlay h2{font-size:22px;font-weight:900;color:var(--red);margin-bottom:8px}
+.ban-overlay p{font-size:13px;color:var(--text2);line-height:1.6;max-width:300px}
+
+/* ─── ANIMS ─── */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes coin-pop{0%{transform:translateY(0) scale(1.2);opacity:1}100%{transform:translateY(-70px) scale(0.4);opacity:0}}
+.coin-pop{position:fixed;font-size:18px;font-weight:900;font-family:'Fredoka One';pointer-events:none;z-index:400;animation:coin-pop .9s ease-out forwards;color:var(--gold)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shake .3s ease-in-out}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- Anti-Cheat Ban Screen -->
+<div class="ban-overlay" id="banOverlay">
+  <div class="ban-ico">🚫</div>
+  <h2>Akun Ditangguhkan</h2>
+  <p>Aktivitas mencurigakan terdeteksi pada akun kamu. Hubungi <strong>@farmverse_support</strong> jika ini adalah kesalahan.</p>
+  <p style="margin-top:12px;font-size:11px;color:var(--red-l)">Kode: <span id="banCode">CHT-001</span></p>
+</div>
+
+<!-- Loading -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">🌾 FarmVerse</div>
+  <div class="loading-sub">v2.0 · Blockchain Farming</div>
+  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+  <div class="loading-tip" id="loadingTip">Memuat data pertanian kamu...</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="logo">🌾 Farm<span style="color:var(--green-l)">Verse</span> <span class="logo-v">v2</span></div>
+  <div class="res-row">
+    <div class="res-chip gold-chip"><span class="ico">🪙</span><span id="goldCoins">0</span></div>
+    <div class="res-chip gem-chip"><span class="ico">💎</span><span id="gems">0</span></div>
+    <div class="level-badge">Lv.<span id="playerLevel">1</span></div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabBar">
+  <div class="tab active" data-tab="farm"><span class="ti">🌱</span>Farm</div>
+  <div class="tab" data-tab="shop"><span class="ti">🏪</span>Toko</div>
+  <div class="tab" data-tab="market"><span class="ti">🔄</span>Market<span class="tab-badge" id="marketBadge" style="display:none">!</span></div>
+  <div class="tab" data-tab="nft"><span class="ti">💎</span>NFT</div>
+  <div class="tab" data-tab="wallet"><span class="ti">💼</span>Wallet</div>
+  <div class="tab" data-tab="leaderboard"><span class="ti">🏆</span>Top</div>
+</div>
+
+<!-- ═══ FARM PAGE ═══ -->
+<div class="page active" id="page-farm">
+  <div class="farm-header">
+    <div class="avatar-wrap">
+      <div class="avatar">👨‍🌾</div>
+      <div class="avatar-nft" id="avatarNft"></div>
+    </div>
+    <div class="farm-info">
+      <h2 id="playerName">Farmer</h2>
+      <p>🏡 Level <span id="farmLevel">1</span> · <span id="farmXP">0</span>/<span id="farmXPMax">1000</span> XP</p>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="val" id="statHarvest">0</div><div class="lbl">Panen</div></div>
+    <div class="stat-card"><div class="val" id="statPlots">0</div><div class="lbl">Aktif</div></div>
+    <div class="stat-card"><div class="val" id="statEarn">0</div><div class="lbl">Earn/h</div></div>
+    <div class="stat-card"><div class="val" id="statStreak">0</div><div class="lbl">Streak🔥</div></div>
+  </div>
+
+  <!-- Daily Quest -->
+  <div class="quest-bar" onclick="openDailyModal()">
+    <div class="quest-ico">📋</div>
+    <div class="quest-info">
+      <h4>Misi Harian</h4>
+      <p id="questDesc">Panen 5 tanaman · Reward: 300🪙 + 20💎</p>
+    </div>
+    <div class="quest-prog-wrap">
+      <div class="quest-prog" id="questProg">0/5</div>
+    </div>
+  </div>
+
+  <!-- Boost Banner -->
+  <div class="boost-banner" onclick="openBoostModal()">
+    <div style="font-size:22px">⚡</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800;color:#fff" id="boostTitle">Aktifkan Premium Boost</div>
+      <div style="font-size:11px;color:#c4b5fd;margin-top:2px" id="boostSub">2x hasil · akses semua tanaman premium</div>
+    </div>
+    <div style="color:#c4b5fd;font-size:18px">›</div>
+  </div>
+
+  <div class="sec">📍 Lahan Pertanian</div>
+  <div class="plot-grid" id="plotGrid"></div>
+  <button class="harvest-all-btn" id="harvestAllBtn" onclick="harvestAll()" disabled>⏳ Belum Ada Panen</button>
+</div>
+
+<!-- ═══ SHOP PAGE ═══ -->
+<div class="page" id="page-shop">
+  <div style="display:flex;gap:6px;margin-bottom:12px">
+    <div class="filter-btn active" data-filter="all" onclick="filterShop('all',this)">🛒 Semua</div>
+    <div class="filter-btn" data-filter="seed" onclick="filterShop('seed',this)">🌱 Benih</div>
+    <div class="filter-btn" data-filter="tool" onclick="filterShop('tool',this)">🔧 Tools</div>
+    <div class="filter-btn" data-filter="land" onclick="filterShop('land',this)">🌍 Lahan</div>
+    <div class="filter-btn" data-filter="bundle" onclick="filterShop('bundle',this)">🎁 Bundle</div>
+  </div>
+  <div class="shop-grid" id="shopGrid"></div>
+</div>
+
+<!-- ═══ MARKET PAGE ═══ -->
+<div class="page" id="page-market">
+  <div class="market-stats">
+    <div class="market-stat"><div class="mv" id="mVolume">0</div><div class="ml">Volume (FVT)</div></div>
+    <div class="market-stat"><div class="mv" id="mListings">0</div><div class="ml">Listing Aktif</div></div>
+    <div class="market-stat"><div class="mv" id="mTrades">0</div><div class="ml">Trades Hari Ini</div></div>
+  </div>
+
+  <div style="display:flex;gap:6px;margin-bottom:12px">
+    <div class="filter-btn active" data-mfilter="all" onclick="filterMarket('all',this)">📦 Semua</div>
+    <div class="filter-btn" data-mfilter="crop" onclick="filterMarket('crop',this)">🌾 Hasil Panen</div>
+    <div class="filter-btn" data-mfilter="nft" onclick="filterMarket('nft',this)">💎 NFT</div>
+    <div class="filter-btn" data-mfilter="mine" onclick="filterMarket('mine',this)">👤 Milikku</div>
+  </div>
+
+  <div class="sec">📋 Daftar Jual-Beli</div>
+  <div id="marketListings"></div>
+
+  <div style="position:fixed;bottom:20px;right:20px;z-index:50">
+    <button onclick="openSellModal()" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#0f766e);border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(13,148,136,0.4);transition:transform .15s" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">+</button>
+  </div>
+</div>
+
+<!-- ═══ NFT PAGE ═══ -->
+<div class="page" id="page-nft">
+  <div class="nft-tabs">
+    <button class="nft-tab active" onclick="switchNftTab('collection',this)">🎨 Koleksi</button>
+    <button class="nft-tab" onclick="switchNftTab('mint',this)">⚗️ Mint</button>
+    <button class="nft-tab" onclick="switchNftTab('owned',this)">👜 Milikku</button>
+  </div>
+
+  <!-- Collection -->
+  <div id="nft-panel-collection">
+    <p style="font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.6">NFT FarmVerse di BNB Chain memberi bonus permanen. Connect wallet untuk beli & mint.</p>
+    <div class="nft-grid" id="nftCollectionGrid"></div>
+  </div>
+
+  <!-- Mint -->
+  <div id="nft-panel-mint" style="display:none">
+    <div class="info-card">
+      <h4>⚗️ Cara Mint NFT</h4>
+      <div class="info-row"><span>Biaya Gas</span><span>~0.001 BNB</span></div>
+      <div class="info-row"><span>Network</span><span>BNB Chain (BSC)</span></div>
+      <div class="info-row"><span>Standard</span><span>ERC-721 / BEP-721</span></div>
+      <div class="info-row"><span>Royalty</span><span>5% untuk developer</span></div>
+    </div>
+    <div class="nft-grid" id="nftMintGrid"></div>
+  </div>
+
+  <!-- Owned -->
+  <div id="nft-panel-owned" style="display:none">
+    <div id="ownedNftGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"></div>
+    <div id="nftEmptyState" style="text-align:center;padding:40px 20px;display:none">
+      <div style="font-size:48px;margin-bottom:12px">💎</div>
+      <h3 style="font-size:16px;font-weight:800;margin-bottom:8px">Belum Ada NFT</h3>
+      <p style="font-size:12px;color:var(--text2)">Connect wallet dan beli NFT pertamamu!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WALLET PAGE ═══ -->
+<div class="page" id="page-wallet">
+  <div id="walletDisconnected">
+    <div style="text-align:center;padding:28px 20px 18px">
+      <div style="font-size:58px;margin-bottom:14px">💼</div>
+      <h2 style="font-size:20px;font-weight:900;margin-bottom:6px">Hubungkan Wallet</h2>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.6">Connect MetaMask atau wallet Web3 untuk transaksi NFT, beli item premium, dan kelola aset on-chain kamu.</p>
+    </div>
+    <button class="connect-btn" onclick="connectWallet()">🦊 Connect MetaMask / WalletConnect</button>
+    <div class="info-card" style="margin-top:12px">
+      <h4>🔗 Network Didukung</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+        <span style="background:rgba(240,185,11,0.1);color:#f0b90b;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid rgba(240,185,11,0.3)">🟡 BNB Chain</span>
+        <span style="background:rgba(98,126,234,0.1);color:#627eea;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid rgba(98,126,234,0.3)">🔵 Ethereum</span>
+        <span style="background:rgba(130,71,229,0.1);color:#8247e5;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid rgba(130,71,229,0.3)">🟣 Polygon</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="walletConnected" style="display:none">
+    <div class="wallet-card">
+      <div class="wallet-label">💼 Wallet Terhubung</div>
+      <div class="wallet-addr" id="walletAddr" onclick="copyWalletAddr()" title="Tap untuk copy">0x...loading</div>
+      <div class="wallet-balance"><span>Saldo: </span><span id="walletBal">0.000</span> BNB</div>
+      <div class="wallet-sub-bal">≈ $<span id="walletUSD">0.00</span> USD · <span id="fvtBal">0</span> FVT Token</div>
+      <div class="network-badge badge-bnb">🟡 BNB Chain (Mainnet)</div>
+    </div>
+
+    <div class="wallet-actions">
+      <div class="wallet-action" onclick="openSendModal()">
+        <div class="wa-ico">📤</div><div class="wa-lbl">Kirim</div>
+      </div>
+      <div class="wallet-action" onclick="showToast('📥 Gunakan alamat wallet di atas','info')">
+        <div class="wa-ico">📥</div><div class="wa-lbl">Terima</div>
+      </div>
+      <div class="wallet-action" onclick="openSwapModal()">
+        <div class="wa-ico">🔄</div><div class="wa-lbl">Swap</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="val" id="nftCount">0</div><div class="lbl">NFT</div></div>
+      <div class="stat-card"><div class="val" id="totalSpent">0.00</div><div class="lbl">BNB Spent</div></div>
+      <div class="stat-card"><div class="val" id="totalEarnW">0</div><div class="lbl">FVT Earned</div></div>
+      <div class="stat-card"><div class="val" id="walletLevel">1</div><div class="lbl">Tier</div></div>
+    </div>
+
+    <div class="sec">📜 Riwayat Transaksi</div>
+    <div class="tx-list" id="txList"></div>
+    <button class="danger-btn" onclick="disconnectWallet()">🔌 Disconnect Wallet</button>
+  </div>
+</div>
+
+<!-- ═══ LEADERBOARD PAGE ═══ -->
+<div class="page" id="page-leaderboard">
+  <div class="lb-my-rank">
+    <div style="font-size:26px">👨‍🌾</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800">Ranking Kamu</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Panen lebih banyak untuk naik peringkat!</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:18px;font-weight:900;color:var(--gold)" id="myRank">#–</div>
+      <div style="font-size:10px;color:var(--text2)" id="myScore">0 panen</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:6px;margin-bottom:12px">
+    <div class="filter-btn active" onclick="showLB('harvest',this)">🌾 Harvest</div>
+    <div class="filter-btn" onclick="showLB('level',this)">⭐ Level</div>
+    <div class="filter-btn" onclick="showLB('nft',this)">💎 NFT</div>
+    <div class="filter-btn" onclick="showLB('wealth',this)">💰 Kekayaan</div>
+  </div>
+
+  <div id="lbList"></div>
+
+  <div class="info-card" style="margin-top:4px">
+    <h4>📢 Cara Naik Ranking:</h4>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-top:6px">
+      🌾 Panen lebih banyak tanaman<br>
+      💎 Beli NFT untuk bonus XP<br>
+      ⚡ Aktifkan Premium Bundle<br>
+      👥 Ajak teman = bonus referral<br>
+      📋 Selesaikan misi harian tiap hari
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<!-- Plant Modal -->
+<div class="modal-overlay" id="plantModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>🌱 Pilih Tanaman</h2>
+    <p class="sub">Lahan #<span id="selectedPlotNum">1</span> · Saldo: <span id="modalGold">0</span>🪙 <span id="modalGems">0</span>💎</p>
+    <div class="crop-options" id="cropOptions"></div>
+    <button class="plant-btn" onclick="plantCrop()">🌱 Tanam Sekarang!</button>
+    <button class="cancel-btn" onclick="closeModal('plantModal')">Batal</button>
+  </div>
+</div>
+
+<!-- Boost Modal -->
+<div class="modal-overlay" id="boostModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>⚡ Pilih Boost</h2>
+    <p class="sub">Tingkatkan hasil pertanian dengan premium boost</p>
+    <div id="boostTiers"></div>
+    <button class="cancel-btn" onclick="closeModal('boostModal')">Nanti saja</button>
+  </div>
+</div>
+
+<!-- Daily Quests Modal -->
+<div class="modal-overlay" id="dailyModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>📋 Misi Harian</h2>
+    <p class="sub">Reset setiap 24 jam · Hari ke-<span id="streakDay">1</span></p>
+    <div class="checkin-grid" id="checkinGrid"></div>
+    <div id="questList"></div>
+    <button class="cancel-btn" onclick="closeModal('dailyModal')">Tutup</button>
+  </div>
+</div>
+
+<!-- Sell Modal -->
+<div class="modal-overlay" id="sellModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>🏪 Jual di Market</h2>
+    <p class="sub">Listing item kamu ke marketplace</p>
+    <div id="sellItemSelect" style="margin-bottom:12px"></div>
+    <div class="sell-input-wrap">
+      <label>Harga (FVT Token)</label>
+      <input type="number" class="sell-input" id="sellPrice" placeholder="Contoh: 1000" min="1" oninput="updateSellFee()">
+    </div>
+    <div class="sell-fee-info" id="sellFeeInfo">
+      Masukkan harga untuk melihat estimasi biaya.
+    </div>
+    <button class="primary-btn" onclick="confirmSell()">✅ Listing Sekarang</button>
+    <button class="cancel-btn" onclick="closeModal('sellModal')">Batal</button>
+  </div>
+</div>
+
+<!-- NFT Detail Modal -->
+<div class="modal-overlay" id="nftDetailModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="nftDetailContent"></div>
+    <button class="cancel-btn" onclick="closeModal('nftDetailModal')">Tutup</button>
+  </div>
+</div>
+
+<!-- Send Modal -->
+<div class="modal-overlay" id="sendModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>📤 Kirim Token</h2>
+    <p class="sub">Transfer FVT ke alamat lain</p>
+    <div class="sell-input-wrap">
+      <label>Alamat Tujuan</label>
+      <input type="text" class="sell-input" id="sendAddr" placeholder="0x..." style="font-family:monospace;font-size:13px">
+    </div>
+    <div class="sell-input-wrap">
+      <label>Jumlah FVT</label>
+      <input type="number" class="sell-input" id="sendAmount" placeholder="0" min="1">
+    </div>
+    <div class="sell-fee-info">Biaya gas: ~0.0005 BNB · Konfirmasi di wallet kamu</div>
+    <button class="primary-btn" onclick="confirmSend()">📤 Kirim FVT</button>
+    <button class="cancel-btn" onclick="closeModal('sendModal')">Batal</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// ANTI-CHEAT ENGINE
+// ═══════════════════════════════════════════
+const ANTI_CHEAT = {
+  harvestLog: [],          // {plotIdx, time}
+  plantLog: [],            // {plotIdx, time}
+  suspicionScore: 0,
+  lastDevtoolsCheck: 0,
+  requestQueue: [],
+  bannedUntil: 0,
+  
+  // HMAC-like session token
+  sessionToken: null,
+  sessionSalt: null,
+  
+  init() {
+    this.sessionSalt = crypto.getRandomValues(new Uint8Array(16)).join('');
+    this.detectDevtools();
+    this.detectTimeTampering();
+    this.blockContextMenu();
+    this.blockKeyboardShortcuts();
+    setInterval(() => this.detectDevtools(), 5000);
+    setInterval(() => this.detectTimeTampering(), 3000);
+  },
+  
+  // Generate server-verifiable action token
+  async signAction(action, data) {
+    const payload = JSON.stringify({ action, data, ts: Date.now(), salt: this.sessionSalt });
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', encoder.encode(this.sessionSalt), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+    return { payload, signature: Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('') };
+  },
+  
+  // Rate limit: max harvests per minute
+  checkHarvestRate(plotIdx) {
+    const now = Date.now();
+    this.harvestLog = this.harvestLog.filter(e => now - e.time < 60000);
+    if (this.harvestLog.length >= 20) {
+      this.flag('HARVEST_RATE', 'Too many harvests per minute');
+      return false;
+    }
+    // Check minimum grow time from server-acknowledged plant time
+    const plot = STATE.plots[plotIdx];
+    if (!plot || !plot.crop) return false;
+    const elapsed = (now - plot.plantedAt) / 1000;
+    if (elapsed < plot.growTime - 2) { // 2s tolerance
+      this.flag('TIME_HACK', `Plot ${plotIdx} harvested too early: ${elapsed.toFixed(1)}s < ${plot.growTime}s`);
+      return false;
+    }
+    this.harvestLog.push({ plotIdx, time: now });
+    return true;
+  },
+  
+  // Rate limit planting
+  checkPlantRate() {
+    const now = Date.now();
+    this.plantLog = this.plantLog.filter(e => now - e.time < 10000);
+    if (this.plantLog.length >= 5) {
+      this.flag('PLANT_SPAM', 'Too many plants in 10 seconds');
+      return false;
+    }
+    this.plantLog.push({ time: now });
+    return true;
+  },
+  
+  // Check for DevTools open
+  detectDevtools() {
+    const threshold = 160;
+    if ((window.outerWidth - window.innerWidth > threshold) ||
+        (window.outerHeight - window.innerHeight > threshold)) {
+      this.suspicionScore += 5;
+      if (this.suspicionScore >= 20) this.flag('DEVTOOLS', 'DevTools detected');
+    }
+  },
+  
+  // Detect time manipulation via monotonic clock drift
+  detectTimeTampering() {
+    const perf = performance.now();
+    const date = Date.now();
+    if (this._lastPerf && this._lastDate) {
+      const perfDelta = perf - this._lastPerf;
+      const dateDelta = date - this._lastDate;
+      if (Math.abs(perfDelta - dateDelta) > 5000) {
+        this.flag('TIME_TAMPER', `Clock drift: perf=${perfDelta.toFixed(0)}ms date=${dateDelta.toFixed(0)}ms`);
+      }
+    }
+    this._lastPerf = perf;
+    this._lastDate = date;
+  },
+  
+  blockContextMenu() {
+    document.addEventListener('contextmenu', e => e.preventDefault());
+  },
+  
+  blockKeyboardShortcuts() {
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
+          (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        this.suspicionScore += 3;
+      }
+    });
+  },
+  
+  // Validate currency changes server-side
+  validateGoldChange(delta, reason) {
+    if (delta > 10000) { this.flag('CURRENCY_INJECT', `Abnormal gold delta: ${delta}`); return false; }
+    if (delta < -STATE.gold) { this.flag('NEGATIVE_GOLD', 'Spending more than available'); return false; }
+    return true;
+  },
+  
+  flag(code, reason) {
+    console.warn(`[ANTI-CHEAT] Flag: ${code} - ${reason}`);
+    this.suspicionScore += 15;
+    // Report to backend
+    this.reportToBackend(code, reason);
+    if (this.suspicionScore >= 60) {
+      this.ban(code);
+    }
+  },
+  
+  ban(code) {
+    document.getElementById('banCode').textContent = code;
+    document.getElementById('banOverlay').classList.add('show');
+    STATE.banned = true;
+  },
+  
+  reportToBackend(code, reason) {
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      try {
+        tg.sendData(JSON.stringify({
+          type: 'anti_cheat_flag',
+          code, reason,
+          userId: STATE.userId,
+          ts: Date.now()
+        }));
+      } catch(e) {}
+    }
+  }
+};
+
+// ═══════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════
+const STATE = {
+  gold: 500, gems: 20, level: 1, xp: 0, xpMax: 1000,
+  totalHarvest: 0, streak: 0, dailyHarvest: 0,
+  walletConnected: false, walletAddr: '', walletBal: 0, fvtBalance: 0,
+  activePlot: null, selectedCrop: null, banned: false,
+  userId: 0, playerName: 'Farmer',
+  boostActive: false, boostMultiplier: 1, boostExpiry: 0,
+  ownedNFTs: [],
+  inventory: {},
+  transactions: [],
+  questProgress: { harvest: 0, plant: 0, spend: 0 },
+  questTarget: { harvest: 5, plant: 3, spend: 200 },
+  questRewarded: false,
+  lastDailyClaim: 0,
+  sellItem: null,
+  marketVolume: 142850,
+  marketTrades: 87,
+  plots: Array.from({length:16}, (_, i) => ({
+    id: i, locked: i >= 8, crop: null, plantedAt: null,
+    growTime: 0, emoji: null, reward: 0, xpReward: 0,
+    serverNonce: null, // anti-cheat
+  }))
+};
+
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const CROPS = [
+  { id:'wheat',    name:'Gandum',      emoji:'🌾', growTime:120,  reward:50,  xpReward:10, cost:10,  costType:'gold', level:1 },
+  { id:'carrot',   name:'Wortel',      emoji:'🥕', growTime:300,  reward:120, xpReward:20, cost:25,  costType:'gold', level:1 },
+  { id:'corn',     name:'Jagung',      emoji:'🌽', growTime:180,  reward:200, xpReward:30, cost:50,  costType:'gold', level:2 },
+  { id:'tomato',   name:'Tomat',       emoji:'🍅', growTime:240,  reward:160, xpReward:25, cost:40,  costType:'gold', level:2 },
+  { id:'pumpkin',  name:'Labu',        emoji:'🎃', growTime:360,  reward:280, xpReward:40, cost:70,  costType:'gold', level:3 },
+  { id:'sunflower',name:'Bunga Matahari',emoji:'🌻',growTime:480, reward:380, xpReward:55, cost:100, costType:'gold', level:4 },
+  { id:'mango',    name:'Mangga',      emoji:'🥭', growTime:600,  reward:520, xpReward:70, cost:130, costType:'gold', level:5 },
+  { id:'grape',    name:'Anggur',      emoji:'🍇', growTime:900,  reward:850, xpReward:100,cost:200, costType:'gold', level:6 },
+  { id:'strawberry',name:'Stroberi',   emoji:'🍓', growTime:180,  reward:400, xpReward:60, cost:15,  costType:'gems', level:3, premium:true },
+  { id:'blueberry',name:'Blueberry',   emoji:'🫐', growTime:240,  reward:600, xpReward:80, cost:25,  costType:'gems', level:4, premium:true },
+  { id:'diamond_apple',name:'Apple Kristal',emoji:'💎',growTime:120,reward:300,xpReward:50,cost:30, costType:'gems', level:2, premium:true },
+];
+
+const SHOP_ITEMS = [
+  { id:'wheat_seed', cat:'seed', emoji:'🌾', name:'Benih Gandum', desc:'Panen 2 menit · +50🪙', price:10, currency:'gold', badge:'basic' },
+  { id:'carrot_seed', cat:'seed', emoji:'🥕', name:'Benih Wortel', desc:'Panen 5 menit · +120🪙', price:25, currency:'gold', badge:'basic' },
+  { id:'corn_seed', cat:'seed', emoji:'🌽', name:'Benih Jagung', desc:'Panen 3 menit · +200🪙 · Lv.2', price:50, currency:'gold', badge:'p2w' },
+  { id:'pumpkin_seed', cat:'seed', emoji:'🎃', name:'Benih Labu', desc:'Panen 6 menit · +280🪙 · Lv.3', price:70, currency:'gold', badge:'p2w' },
+  { id:'strawberry_seed', cat:'seed', emoji:'🍓', name:'Stroberi Crystal', desc:'Premium · Panen 3 menit · +400🪙', price:15, currency:'gems', badge:'nft' },
+  { id:'blueberry_seed', cat:'seed', emoji:'🫐', name:'Benih Blueberry', desc:'Premium · Panen 4 menit · +600🪙', price:25, currency:'gems', badge:'nft' },
+  { id:'instant_fert', cat:'tool', emoji:'⚡', name:'Pupuk Instan', desc:'Percepat panen 50% · semua lahan', price:50, currency:'gold', badge:'hot' },
+  { id:'super_fert', cat:'tool', emoji:'🧪', name:'Super Fertilizer', desc:'Selesaikan panen instan · 1 lahan', price:20, currency:'gems', badge:'hot' },
+  { id:'plot_unlock', cat:'land', emoji:'🌍', name:'Buka Lahan Baru', desc:'Slot lahan +1 permanent · on-chain', price:'0.01', currency:'bnb', badge:'nft' },
+  { id:'mega_land', cat:'land', emoji:'🏞️', name:'Mega Land Pack', desc:'Buka 4 lahan sekaligus + bonus tanah subur', price:'0.035', currency:'bnb', badge:'nft' },
+  { id:'starter_bundle', cat:'bundle', emoji:'🎁', name:'Starter Bundle', desc:'1500🪙 + 50💎 + Pupuk x3', price:'0.005', currency:'bnb', badge:'p2w' },
+  { id:'premium_bundle', cat:'bundle', emoji:'🚀', name:'Premium Bundle 🔥', desc:'2x hasil 24 jam + 5000🪙 + 500💎 + unlock semua tanaman', price:'0.02', currency:'bnb', badge:'p2w' },
+  { id:'ultra_vip', cat:'bundle', emoji:'👑', name:'Ultra VIP Pass', desc:'3x semua • Akses eksklusif selamanya + NFT GRATIS', price:'0.1', currency:'bnb', badge:'p2w' },
+];
+
+const NFT_ITEMS = [
+  { id:'royal_farmer', emoji:'👑', name:'Royal Farmer', bonus:'+100% XP semua aktivitas', price:'0.08', rarity:'legendary', desc:'NFT paling dicari. Bonus XP permanen +100% untuk semua aktivitas.' },
+  { id:'auto_harvester', emoji:'🤖', name:'Auto Harvester', bonus:'Auto-panen setiap 30 menit', price:'0.05', rarity:'epic', desc:'Bot pertanian otomatis. Panen tanpa perlu tap!' },
+  { id:'alchemist_lab', emoji:'🧪', name:'Alchemist Lab', bonus:'Buat potion +3x hasil', price:'0.12', rarity:'legendary', desc:'Laboratorium alkimia untuk membuat potion langka.' },
+  { id:'grand_castle', emoji:'🏰', name:'Grand Castle', bonus:'+5 slot lahan eksklusif', price:'0.25', rarity:'legendary', desc:'Kastil megah dengan 5 slot lahan eksklusif tak terkunci.' },
+  { id:'unicorn_mount', emoji:'🦄', name:'Unicorn Mount', bonus:'Move 3x lebih cepat + XP bonus', price:'0.15', rarity:'epic', desc:'Tunggangan ajaib yang meningkatkan semua kecepatan.' },
+  { id:'rare_soil', emoji:'⚗️', name:'Rare Soil Pack', bonus:'Tanaman tumbuh 2x lebih cepat', price:'0.06', rarity:'rare', desc:'Tanah langka yang mempercepat pertumbuhan tanaman.' },
+  { id:'golden_tractor', emoji:'🚜', name:'Golden Tractor', bonus:'4x plot dapat ditanami bersamaan', price:'0.18', rarity:'epic', desc:'Traktor emas yang meningkatkan kapasitas tanam.' },
+  { id:'crystal_greenhouse', emoji:'🌿', name:'Crystal Greenhouse', bonus:'Tanaman premium tak perlu gems', price:'0.10', rarity:'rare', desc:'Rumah kaca kristal: semua tanaman premium bisa dibeli dengan gold.' },
+];
+
+const MARKET_LISTINGS = [
+  { id:'ml1', itemEmoji:'🌾', itemName:'Harvest Gandum x50', seller:'CryptoFarmer99', price:850, currency:'FVT', type:'crop', mine:false },
+  { id:'ml2', itemEmoji:'🤖', itemName:'Auto Harvester NFT', seller:'BlockchainKing', price:18500, currency:'FVT', type:'nft', mine:false },
+  { id:'ml3', itemEmoji:'🍓', itemName:'Stroberi Crystal x20', seller:'DeFiGardener', price:2400, currency:'FVT', type:'crop', mine:false },
+  { id:'ml4', itemEmoji:'⚗️', itemName:'Rare Soil Pack NFT', seller:'NFTHarvester', price:9800, currency:'FVT', type:'nft', mine:false },
+  { id:'ml5', itemEmoji:'🥕', itemName:'Harvest Wortel x30', seller:'Web3Planter', price:620, currency:'FVT', type:'crop', mine:false },
+];
+
+const TX_DATA_MOCK = [
+  { type:'in',   emoji:'🌾', name:'Hasil Panen Gandum',    amount:'+150 FVT', time:'2 mnt lalu',   hash:'0xab12...3f4a' },
+  { type:'out',  emoji:'🤖', name:'Beli Auto Harvester NFT', amount:'-0.05 BNB', time:'1 jam lalu', hash:'0xcd56...7b2e' },
+  { type:'in',   emoji:'🎁', name:'Reward Referral',        amount:'+500 FVT', time:'3 jam lalu',  hash:'0xef78...9d1c' },
+  { type:'out',  emoji:'💎', name:'Premium Bundle',         amount:'-0.02 BNB', time:'Kemarin',     hash:'0x12ab...5e3f' },
+  { type:'in',   emoji:'🏆', name:'Hadiah Ranking #7',      amount:'+0.001 BNB', time:'2 hari lalu',hash:'0x34cd...8g6h' },
+  { type:'pending',emoji:'🔄', name:'Listing Stroberi x20', amount:'2400 FVT', time:'30 mnt lalu',  hash:'0x56ef...2k4l' },
+];
+
+const LEADERBOARD_DATA = [
+  { rank:1, name:'CryptoFarmer99', emoji:'🧑‍🌾', harvest:48520, level:42, nfts:7 },
+  { rank:2, name:'BlockchainKing', emoji:'👨‍💼', harvest:41200, level:38, nfts:5 },
+  { rank:3, name:'NFTHarvester',   emoji:'👩‍🌾', harvest:38750, level:35, nfts:4 },
+  { rank:4, name:'DeFiGardener',   emoji:'🧙',   harvest:31400, level:30, nfts:3 },
+  { rank:5, name:'Web3Planter',    emoji:'🤖',   harvest:27860, level:27, nfts:2 },
+  { rank:6, name:'TokenFarmer',    emoji:'🦸',   harvest:19320, level:22, nfts:3 },
+  { rank:8, name:'SmartFarm2025',  emoji:'🐲',   harvest:7200,  level:14, nfts:1 },
+  { rank:9, name:'PixelHarvest',   emoji:'🌻',   harvest:5400,  level:11, nfts:0 },
+  { rank:10, name:'CryptoSoil',    emoji:'🌱',   harvest:3800,  level:9,  nfts:1 },
+];
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+const TIPS = [
+  'Tip: Panen tepat waktu agar tidak rugi!',
+  'Tip: NFT Auto Harvester bisa panen otomatis!',
+  'Tip: Level up untuk membuka tanaman premium',
+  'Tip: Ajak teman untuk bonus referral 200🪙!',
+  'Tip: Selesaikan misi harian untuk gems gratis',
+];
+
+window.addEventListener('DOMContentLoaded', () => {
+  ANTI_CHEAT.init();
+  document.getElementById('loadingTip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+
+  // Telegram init
+  if (window.Telegram?.WebApp) {
+    const tg = Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    tg.setHeaderColor('#111d11');
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+      STATE.userId = user.id;
+      STATE.playerName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+      document.getElementById('playerName').textContent = STATE.playerName;
+      document.getElementById('farmLevel').textContent = STATE.level;
+    }
+  }
+
+  // Demo data
+  STATE.plots[0] = { ...STATE.plots[0], crop:'wheat', emoji:'🌾', plantedAt:Date.now()-100000, growTime:120, reward:50, xpReward:10 };
+  STATE.plots[1] = { ...STATE.plots[1], crop:'carrot', emoji:'🥕', plantedAt:Date.now()-400000, growTime:300, reward:120, xpReward:20 };
+  STATE.plots[2] = { ...STATE.plots[2], crop:'corn', emoji:'🌽', plantedAt:Date.now()-50000, growTime:180, reward:200, xpReward:30 };
+
+  renderAll();
+
+  setTimeout(() => {
+    document.getElementById('loadingScreen').classList.add('hidden');
+  }, 2600);
+
+  // Tick every second
+  setInterval(tickPlots, 1000);
+  setInterval(tickBoost, 1000);
+});
+
+// ═══════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════
+function renderAll() {
+  renderPlots();
+  renderShop('all');
+  renderMarket('all');
+  renderNFTCollection();
+  renderNFTMint();
+  renderOwnedNFTs();
+  renderLeaderboard('harvest');
+  updateHUD();
+  updateQuestBar();
+  updateBoostBanner();
+}
+
+// ═══════════════════════════════════════════
+// PLOT RENDERING
+// ═══════════════════════════════════════════
+function renderPlots() {
+  const grid = document.getElementById('plotGrid');
+  grid.innerHTML = '';
+  STATE.plots.forEach((plot, i) => {
+    const el = document.createElement('div');
+    el.className = 'plot';
+    el.id = `plot-${i}`;
+
+    if (plot.locked) {
+      el.classList.add('locked');
+      const unlockCost = Math.floor((i - 7) * 200);
+      el.innerHTML = `<div class="plot-lock">🔒</div><div class="plot-lock-price">${unlockCost}🪙</div>`;
+      el.onclick = () => unlockPlot(i, unlockCost);
+    } else if (!plot.crop) {
+      el.classList.add('empty');
+      el.innerHTML = `<div style="font-size:22px;opacity:.4">➕</div>`;
+      el.onclick = () => openPlantModal(i);
+    } else {
+      const elapsed = (Date.now() - plot.plantedAt) / 1000;
+      const pct = Math.min(elapsed / plot.growTime, 1);
+      const ready = pct >= 1;
+      el.classList.add(ready ? 'ready' : 'growing');
+      const remaining = ready ? 0 : Math.ceil(plot.growTime - elapsed);
+      el.innerHTML = `
+        <div class="plot-emoji">${plot.emoji}</div>
+        <div class="plot-timer">${ready ? '✅ SIAP' : formatTime(remaining)}</div>
+        <div class="plot-progress"><div class="plot-progress-fill" style="width:${pct*100}%"></div></div>`;
+      el.onclick = ready ? () => harvestPlot(i) : () => showToast(`⏳ ${formatTime(remaining)} lagi`);
+    }
+    grid.appendChild(el);
+  });
+  updateHarvestBtn();
+}
+
+function tickPlots() {
+  let changed = false;
+  STATE.plots.forEach((plot, i) => {
+    if (!plot.crop || plot.locked) return;
+    const elapsed = (Date.now() - plot.plantedAt) / 1000;
+    const pct = Math.min(elapsed / plot.growTime, 1);
+    const ready = pct >= 1;
+    const el = document.getElementById(`plot-${i}`);
+    if (!el) return;
+
+    // Update progress fill
+    const fill = el.querySelector('.plot-progress-fill');
+    if (fill) fill.style.width = `${pct * 100}%`;
+
+    // Update timer text
+    const timer = el.querySelector('.plot-timer');
+    if (timer) {
+      if (ready && !el.classList.contains('ready')) {
+        el.classList.remove('growing');
+        el.classList.add('ready');
+        timer.textContent = '✅ SIAP';
+        el.onclick = () => harvestPlot(i);
+        changed = true;
+      } else if (!ready) {
+        timer.textContent = formatTime(Math.ceil(plot.growTime - elapsed));
+      }
+    }
+  });
+  if (changed) updateHarvestBtn();
+}
+
+function tickBoost() {
+  if (STATE.boostActive && Date.now() > STATE.boostExpiry) {
+    STATE.boostActive = false;
+    STATE.boostMultiplier = 1;
+    updateBoostBanner();
+    showToast('⚡ Boost telah habis!', 'info');
+  }
+}
+
+function updateHarvestBtn() {
+  const readyCount = STATE.plots.filter(p => p.crop && !p.locked && (Date.now()-p.plantedAt)/1000 >= p.growTime).length;
+  const btn = document.getElementById('harvestAllBtn');
+  btn.disabled = readyCount === 0;
+  btn.innerHTML = readyCount > 0
+    ? `🌾 Panen Semua (${readyCount} siap)`
+    : '⏳ Belum Ada Panen Siap';
+}
+
+// ═══════════════════════════════════════════
+// PLANT & HARVEST (WITH ANTI-CHEAT)
+// ═══════════════════════════════════════════
+let activePlotIndex = null;
+
+function openPlantModal(idx) {
+  activePlotIndex = idx;
+  document.getElementById('selectedPlotNum').textContent = idx + 1;
+  document.getElementById('modalGold').textContent = STATE.gold.toLocaleString('id-ID');
+  document.getElementById('modalGems').textContent = STATE.gems;
+  STATE.selectedCrop = null;
+
+  const container = document.getElementById('cropOptions');
+  container.innerHTML = '';
+  CROPS.forEach(c => {
+    const canAfford = c.costType === 'gold' ? STATE.gold >= c.cost : STATE.gems >= c.cost;
+    const levelOk = STATE.level >= c.level;
+    const el = document.createElement('div');
+    el.className = 'crop-opt' + (!canAfford || !levelOk ? ' locked-crop' : '');
+    el.innerHTML = `
+      <div class="ce">${c.emoji}</div>
+      <div class="cn">${c.name}</div>
+      <div class="ci">${c.growTime >= 60 ? Math.floor(c.growTime/60)+'m' : c.growTime+'s'}</div>
+      <div class="cr">${c.costType==='gems'?'💎':'🪙'}${c.cost}</div>
+      ${!levelOk ? `<div style="font-size:9px;color:var(--red-l)">Lv.${c.level}</div>` : ''}`;
+    if (c.premium) el.style.borderColor = 'rgba(168,85,247,0.4)';
+    if (canAfford && levelOk) {
+      el.onclick = () => {
+        document.querySelectorAll('.crop-opt').forEach(x => x.classList.remove('selected'));
+        el.classList.add('selected');
+        STATE.selectedCrop = c;
+      };
+    }
+    container.appendChild(el);
+  });
+  openModal('plantModal');
+}
+
+function plantCrop() {
+  if (!STATE.selectedCrop) { showToast('⚠️ Pilih tanaman dulu!', 'error'); return; }
+  if (STATE.banned) return;
+
+  // ANTI-CHEAT: rate limit
+  if (!ANTI_CHEAT.checkPlantRate()) {
+    showToast('⚠️ Terlalu cepat! Tunggu sebentar.', 'error');
+    return;
+  }
+
+  const c = STATE.selectedCrop;
+  if (c.costType === 'gold') {
+    if (!ANTI_CHEAT.validateGoldChange(-c.cost, 'plant')) return;
+    if (STATE.gold < c.cost) { showToast('❌ Koin tidak cukup!', 'error'); return; }
+    STATE.gold -= c.cost;
+  } else {
+    if (STATE.gems < c.cost) { showToast('❌ Gems tidak cukup!', 'error'); return; }
+    STATE.gems -= c.cost;
+  }
+
+  const plot = STATE.plots[activePlotIndex];
+  // Store server-verifiable nonce
+  plot.serverNonce = Date.now() + '_' + Math.random().toString(36).substr(2,9);
+  plot.crop = c.id;
+  plot.emoji = c.emoji;
+  plot.plantedAt = Date.now(); // Server should verify this
+  plot.growTime = c.growTime;
+  plot.reward = c.reward;
+  plot.xpReward = c.xpReward;
+
+  STATE.questProgress.plant++;
+  STATE.questProgress.spend += c.cost;
+
+  closeModal('plantModal');
+  renderPlots();
+  updateHUD();
+  updateQuestBar();
+  showToast(`${c.emoji} ${c.name} ditanam di lahan #${activePlotIndex+1}!`, 'success');
+  sendToBackend('plant', { plotIdx: activePlotIndex, cropId: c.id, nonce: plot.serverNonce });
+}
+
+function harvestPlot(idx) {
+  if (STATE.banned) return;
+  // ANTI-CHEAT: validate timing server-side too
+  if (!ANTI_CHEAT.checkHarvestRate(idx)) {
+    showToast('🚫 Aktivitas mencurigakan terdeteksi!', 'error');
+    return;
+  }
+
+  const plot = STATE.plots[idx];
+  if (!plot.crop) return;
+  const elapsed = (Date.now() - plot.plantedAt) / 1000;
+  if (elapsed < plot.growTime - 2) { showToast('❌ Belum siap panen!', 'error'); return; }
+
+  const multiplier = STATE.boostActive ? STATE.boostMultiplier : 1;
+  const nftBonus = STATE.ownedNFTs.includes('rare_soil') ? 2 : 1;
+  const earnedGold = Math.floor(plot.reward * multiplier * nftBonus);
+  const earnedXP = Math.floor(plot.xpReward * multiplier);
+
+  if (!ANTI_CHEAT.validateGoldChange(earnedGold, 'harvest')) return;
+
+  STATE.gold += earnedGold;
+  STATE.xp += earnedXP;
+  STATE.totalHarvest++;
+  STATE.dailyHarvest++;
+  STATE.questProgress.harvest++;
+
+  const plotEl = document.getElementById(`plot-${idx}`);
+  spawnCoinPop(plotEl, `+${earnedGold}🪙`);
+
+  // Level up check
+  if (STATE.xp >= STATE.xpMax) {
+    STATE.xp -= STATE.xpMax;
+    STATE.level++;
+    STATE.xpMax = Math.floor(STATE.xpMax * 1.4);
+    showToast(`🎉 LEVEL UP! Kamu Level ${STATE.level}!`, 'success');
+    STATE.gems += 10; // level up gem reward
+  }
+
+  const harvestedEmoji = plot.emoji;
+  plot.crop = null; plot.emoji = null; plot.plantedAt = null; plot.serverNonce = null;
+
+  renderPlots();
+  updateHUD();
+  updateQuestBar();
+  checkQuestComplete();
+  showToast(`${harvestedEmoji} Panen berhasil! +${earnedGold}🪙 +${earnedXP}XP`, 'success');
+  sendToBackend('harvest', { plotIdx: idx, expectedReward: earnedGold });
+}
+
+function harvestAll() {
+  if (STATE.banned) return;
+  let count = 0, totalGold = 0, totalXP = 0;
+  STATE.plots.forEach((plot, i) => {
+    if (!plot.crop || plot.locked) return;
+    if (!ANTI_CHEAT.checkHarvestRate(i)) return;
+    const elapsed = (Date.now() - plot.plantedAt) / 1000;
+    if (elapsed < plot.growTime - 2) return;
+    const multiplier = STATE.boostActive ? STATE.boostMultiplier : 1;
+    const nftBonus = STATE.ownedNFTs.includes('rare_soil') ? 2 : 1;
+    totalGold += Math.floor(plot.reward * multiplier * nftBonus);
+    totalXP += Math.floor(plot.xpReward * multiplier);
+    STATE.totalHarvest++;
+    STATE.dailyHarvest++;
+    STATE.questProgress.harvest++;
+    plot.crop = null; plot.emoji = null; plot.plantedAt = null; plot.serverNonce = null;
+    count++;
+  });
+  if (count > 0) {
+    if (!ANTI_CHEAT.validateGoldChange(totalGold, 'harvest_all')) return;
+    STATE.gold += totalGold;
+    STATE.xp += totalXP;
+    if (STATE.xp >= STATE.xpMax) { STATE.xp -= STATE.xpMax; STATE.level++; STATE.xpMax = Math.floor(STATE.xpMax * 1.4); }
+    renderPlots();
+    updateHUD();
+    updateQuestBar();
+    checkQuestComplete();
+    showToast(`🎉 Panen ${count} tanaman! +${totalGold}🪙`, 'success');
+    sendToBackend('harvest_all', { count, totalGold });
+  }
+}
+
+function unlockPlot(idx, cost) {
+  if (STATE.gold < cost) { showToast('❌ Koin tidak cukup untuk membuka lahan!', 'error'); return; }
+  if (!ANTI_CHEAT.validateGoldChange(-cost, 'unlock_plot')) return;
+  STATE.gold -= cost;
+  STATE.plots[idx].locked = false;
+  renderPlots();
+  updateHUD();
+  showToast(`🌍 Lahan #${idx+1} berhasil dibuka!`, 'success');
+  sendToBackend('unlock_plot', { plotIdx: idx, cost });
+}
+
+// ═══════════════════════════════════════════
+// SHOP
+// ═══════════════════════════════════════════
+function renderShop(filter) {
+  const grid = document.getElementById('shopGrid');
+  const items = filter === 'all' ? SHOP_ITEMS : SHOP_ITEMS.filter(i => i.cat === filter);
+  grid.innerHTML = items.map(item => {
+    const badgeClass = { basic:'badge-basic', p2w:'badge-p2w', nft:'badge-nft', hot:'badge-hot' }[item.badge] || 'badge-basic';
+    const badgeLabel = { basic:'BASIC', p2w:'⭐ P2W', nft:'🔷 WEB3', hot:'🔥 HOT' }[item.badge] || '';
+    let btnHtml = '', cls = item.currency === 'bnb' ? 'web3-item' : (item.badge === 'p2w' || item.badge === 'hot' ? 'featured' : '');
+    if (item.currency === 'gold') btnHtml = `<button class="buy-btn btn-gold" onclick="buyShopItem('${item.id}')">${item.price} 🪙</button>`;
+    else if (item.currency === 'gems') btnHtml = `<button class="buy-btn btn-gem" onclick="buyShopItem('${item.id}')">${item.price} 💎</button>`;
+    else btnHtml = `<button class="buy-btn btn-bnb" onclick="buyWeb3Item('${item.id}')">${item.price} BNB</button>`;
+    return `<div class="shop-item ${cls}">
+      <div class="shop-emoji">${item.emoji}</div>
+      <div class="shop-info">
+        <span class="shop-badge ${badgeClass}">${badgeLabel}</span>
+        <h3>${item.name}</h3>
+        <p>${item.desc}</p>
+      </div>
+      ${btnHtml}
+    </div>`;
+  }).join('');
+}
+
+function filterShop(f, el) {
+  document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderShop(f);
+}
+
+function buyShopItem(itemId) {
+  if (STATE.banned) return;
+  const item = SHOP_ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+
+  if (item.currency === 'gold') {
+    if (STATE.gold < item.price) { showToast('❌ Koin tidak cukup!', 'error'); return; }
+    if (!ANTI_CHEAT.validateGoldChange(-item.price, 'buy_item')) return;
+    STATE.gold -= item.price;
+    applyItemEffect(item);
+  } else if (item.currency === 'gems') {
+    if (STATE.gems < item.price) { showToast('❌ Gems tidak cukup!', 'error'); return; }
+    STATE.gems -= item.price;
+    applyItemEffect(item);
+  }
+  updateHUD();
+  showToast(`✅ ${item.name} berhasil dibeli!`, 'success');
+  sendToBackend('buy_item', { itemId, cost: item.price, currency: item.currency });
+}
+
+function applyItemEffect(item) {
+  if (item.id === 'instant_fert') {
+    let count = 0;
+    STATE.plots.forEach(p => {
+      if (p.crop && !p.locked) {
+        p.plantedAt -= (p.growTime * 500); // 50% faster
+        count++;
+      }
+    });
+    renderPlots();
+    showToast(`⚡ Pupuk diterapkan ke ${count} lahan!`, 'success');
+  } else if (item.id === 'super_fert') {
+    const growing = STATE.plots.find(p => p.crop && !p.locked);
+    if (growing) { growing.plantedAt -= growing.growTime * 1000; renderPlots(); }
+  } else if (item.id === 'plot_unlock') {
+    const locked = STATE.plots.find(p => p.locked);
+    if (locked) { locked.locked = false; renderPlots(); }
+  }
+}
+
+function buyWeb3Item(itemId) {
+  if (!STATE.walletConnected) {
+    showToast('🔗 Connect wallet dulu!', 'info');
+    switchTab('wallet');
+    return;
+  }
+  const item = SHOP_ITEMS.find(i => i.id === itemId);
+  if (!item) return;
+  simulateWeb3Tx(itemId, item);
+}
+
+// ═══════════════════════════════════════════
+// MARKETPLACE
+// ═══════════════════════════════════════════
+function renderMarket(filter) {
+  document.getElementById('mVolume').textContent = STATE.marketVolume.toLocaleString('id-ID');
+  document.getElementById('mListings').textContent = MARKET_LISTINGS.length;
+  document.getElementById('mTrades').textContent = STATE.marketTrades;
+
+  const listings = filter === 'all' ? MARKET_LISTINGS :
+    filter === 'mine' ? MARKET_LISTINGS.filter(l => l.mine) :
+    MARKET_LISTINGS.filter(l => l.type === filter);
+
+  const container = document.getElementById('marketListings');
+  if (listings.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:12px">📦</div>
+      <p>Tidak ada listing di kategori ini</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = listings.map(l => `
+    <div class="market-listing ${l.mine ? 'mine' : ''}">
+      <div class="ml-avatar">${l.itemEmoji}</div>
+      <div class="ml-info">
+        <h4>${l.itemName}</h4>
+        <p>${l.type === 'nft' ? '💎 NFT Item' : '🌾 Hasil Panen'}</p>
+        <div class="ml-seller">👤 ${l.seller} ${l.mine ? '<span style="color:var(--gold)">(Kamu)</span>' : ''}</div>
+      </div>
+      <div class="ml-price">
+        <div class="amount">${l.price.toLocaleString('id-ID')}</div>
+        <div class="currency">${l.currency}</div>
+        <div class="ml btn">
+          ${l.mine
+            ? `<button class="buy-btn btn-sell" style="margin-top:5px;padding:5px 10px" onclick="cancelListing('${l.id}')">Tarik</button>`
+            : `<button class="buy-btn btn-market" style="margin-top:5px;padding:5px 10px" onclick="buyListing('${l.id}')">Beli</button>`}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function filterMarket(f, el) {
+  document.querySelectorAll('.filter-btn[data-mfilter]').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderMarket(f);
+}
+
+function buyListing(id) {
+  if (!STATE.walletConnected) { showToast('🔗 Connect wallet untuk beli di market!', 'info'); return; }
+  const listing = MARKET_LISTINGS.find(l => l.id === id);
+  if (!listing) return;
+  if (STATE.fvtBalance < listing.price) {
+    showToast('❌ FVT Token tidak cukup!', 'error'); return;
+  }
+  STATE.fvtBalance -= listing.price;
+  STATE.marketVolume += listing.price;
+  STATE.marketTrades++;
+  const idx = MARKET_LISTINGS.indexOf(listing);
+  MARKET_LISTINGS.splice(idx, 1);
+  renderMarket('all');
+  updateHUD();
+  showToast(`✅ Berhasil membeli ${listing.itemName}!`, 'success');
+  addTx('in', listing.itemEmoji, `Beli: ${listing.itemName}`, `+${listing.itemEmoji}`, 'just now');
+}
+
+function cancelListing(id) {
+  const idx = MARKET_LISTINGS.findIndex(l => l.id === id);
+  if (idx >= 0) { MARKET_LISTINGS.splice(idx, 1); renderMarket('mine'); showToast('📦 Listing dibatalkan', 'info'); }
+}
+
+function openSellModal() {
+  if (!STATE.walletConnected) { showToast('🔗 Connect wallet untuk listing di market!', 'info'); return; }
+  document.getElementById('sellItemSelect').innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">Pilih Item untuk Dijual:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${['🌾 Gandum x50','🥕 Wortel x30','🍓 Stroberi x10','🌽 Jagung x25'].map((item, i) =>
+        `<div class="filter-btn ${i===0?'active':''}" onclick="selectSellItem(this,'${item}')" style="cursor:pointer">${item}</div>`
+      ).join('')}
+    </div>`;
+  STATE.sellItem = '🌾 Gandum x50';
+  document.getElementById('sellPrice').value = '';
+  document.getElementById('sellFeeInfo').textContent = 'Masukkan harga untuk melihat estimasi biaya.';
+  openModal('sellModal');
+}
+
+function selectSellItem(el, item) {
+  document.querySelectorAll('#sellItemSelect .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  STATE.sellItem = item;
+}
+
+function updateSellFee() {
+  const price = parseInt(document.getElementById('sellPrice').value) || 0;
+  const fee = Math.floor(price * 0.05);
+  const net = price - fee;
+  document.getElementById('sellFeeInfo').innerHTML = `
+    Harga listing: <strong>${price.toLocaleString('id-ID')} FVT</strong><br>
+    Biaya platform (5%): <strong>${fee.toLocaleString('id-ID')} FVT</strong><br>
+    Kamu terima: <strong style="color:var(--green-l)">${net.toLocaleString('id-ID')} FVT</strong>`;
+}
+
+function confirmSell() {
+  const price = parseInt(document.getElementById('sellPrice').value);
+  if (!price || price < 10) { showToast('❌ Harga minimum 10 FVT', 'error'); return; }
+  if (!STATE.sellItem) { showToast('❌ Pilih item dulu!', 'error'); return; }
+
+  // Anti-cheat: validate sell request
+  if (price > 999999) { ANTI_CHEAT.flag('PRICE_INJECT', 'Abnormally high sell price'); return; }
+
+  const parts = STATE.sellItem.split(' ');
+  const emoji = parts[0];
+  const newListing = {
+    id: 'ml' + Date.now(), itemEmoji: emoji,
+    itemName: STATE.sellItem, seller: STATE.playerName,
+    price, currency: 'FVT', type: 'crop', mine: true
+  };
+  MARKET_LISTINGS.unshift(newListing);
+  STATE.marketListings = (STATE.marketListings || 0) + 1;
+  closeModal('sellModal');
+  renderMarket('all');
+  showToast(`✅ ${STATE.sellItem} listing berhasil!`, 'success');
+  sendToBackend('market_list', { item: STATE.sellItem, price });
+}
+
+// ═══════════════════════════════════════════
+// NFT
+// ═══════════════════════════════════════════
+const RARITY_LABELS = { common:'🟢 Common', rare:'🔵 Rare', epic:'🟣 Epic', legendary:'🟡 Legendary' };
+
+function renderNFTCollection() {
+  document.getElementById('nftCollectionGrid').innerHTML = NFT_ITEMS.map(n => {
+    const owned = STATE.ownedNFTs.includes(n.id);
+    return `<div class="nft-card ${owned?'owned':''} ${n.rarity==='epic'||n.rarity==='legendary'?'rare':''}" onclick="showNFTDetail('${n.id}')">
+      <span class="nft-rarity rarity-${n.rarity}">${RARITY_LABELS[n.rarity]}</span>
+      <div class="nft-emoji">${n.emoji}</div>
+      <div class="nft-name">${n.name}</div>
+      <div class="nft-bonus">${n.bonus}</div>
+      <div class="nft-price-tag">${owned ? '✅ Dimiliki' : `${n.price} BNB`}</div>
+      ${!owned ? `<button class="buy-btn btn-bnb" style="margin-top:8px;width:100%" onclick="event.stopPropagation();buyNFT('${n.id}')">Beli NFT</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderNFTMint() {
+  document.getElementById('nftMintGrid').innerHTML = NFT_ITEMS.filter(n => !STATE.ownedNFTs.includes(n.id)).map(n => `
+    <div class="nft-card" onclick="showNFTDetail('${n.id}')">
+      <span class="nft-rarity rarity-${n.rarity}">${RARITY_LABELS[n.rarity]}</span>
+      <div class="nft-emoji">${n.emoji}</div>
+      <div class="nft-name">${n.name}</div>
+      <div class="nft-bonus">${n.bonus}</div>
+      <div class="nft-price-tag">Mint: ${n.price} BNB + gas</div>
+      <button class="buy-btn btn-bnb" style="margin-top:8px;width:100%" onclick="event.stopPropagation();mintNFT('${n.id}')">⚗️ Mint</button>
+    </div>`).join('');
+}
+
+function renderOwnedNFTs() {
+  const grid = document.getElementById('ownedNftGrid');
+  const empty = document.getElementById('nftEmptyState');
+  if (STATE.ownedNFTs.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = STATE.ownedNFTs.map(nid => {
+    const n = NFT_ITEMS.find(x => x.id === nid);
+    if (!n) return '';
+    return `<div class="nft-card owned" onclick="showNFTDetail('${n.id}')">
+      <span class="nft-sold-badge">✅ OWNED</span>
+      <div class="nft-emoji">${n.emoji}</div>
+      <div class="nft-name">${n.name}</div>
+      <div class="nft-bonus">${n.bonus}</div>
+      <div class="nft-price-tag">✅ Aktif · ${n.price} BNB</div>
+      <div class="nft-actions">
+        <button class="btn-list" onclick="event.stopPropagation();listNFTForSale('${n.id}')">🏷️ Jual</button>
+        <button class="btn-gift" onclick="event.stopPropagation();giftNFT('${n.id}')">🎁 Gift</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchNftTab(tab, el) {
+  document.querySelectorAll('.nft-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['collection','mint','owned'].forEach(t => {
+    document.getElementById(`nft-panel-${t}`).style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+function showNFTDetail(nftId) {
+  const n = NFT_ITEMS.find(x => x.id === nftId);
+  if (!n) return;
+  const owned = STATE.ownedNFTs.includes(nftId);
+  document.getElementById('nftDetailContent').innerHTML = `
+    <h2>${n.emoji} ${n.name}</h2>
+    <p class="sub">${RARITY_LABELS[n.rarity]} · ${owned ? '✅ Dimiliki' : 'Belum dimiliki'}</p>
+    <div style="font-size:50px;text-align:center;margin:16px 0;animation:float 2s ease-in-out infinite">${n.emoji}</div>
+    <div class="info-card">
+      <h4>📊 Detail NFT</h4>
+      <div class="info-row"><span>Bonus</span><span>${n.bonus}</span></div>
+      <div class="info-row"><span>Rarity</span><span>${RARITY_LABELS[n.rarity]}</span></div>
+      <div class="info-row"><span>Harga Mint</span><span>${n.price} BNB</span></div>
+      <div class="info-row"><span>Standard</span><span>BEP-721</span></div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);line-height:1.6;margin:12px 0">${n.desc}</p>
+    ${!owned ? `<button class="primary-btn" onclick="buyNFT('${n.id}');closeModal('nftDetailModal')">🛒 Beli Sekarang · ${n.price} BNB</button>` : ''}`;
+  openModal('nftDetailModal');
+}
+
+function buyNFT(nftId) {
+  if (!STATE.walletConnected) { showToast('🔗 Connect wallet untuk beli NFT!', 'info'); switchTab('wallet'); return; }
+  simulateNFTTx(nftId);
+}
+
+function mintNFT(nftId) { buyNFT(nftId); }
+
+function listNFTForSale(nftId) {
+  const n = NFT_ITEMS.find(x => x.id === nftId);
+  if (!n) return;
+  STATE.sellItem = `${n.emoji} ${n.name} NFT`;
+  openSellModal();
+}
+
+function giftNFT(nftId) { showToast('🎁 Fitur Gift NFT segera hadir!', 'info'); }
+
+function simulateNFTTx(nftId) {
+  const n = NFT_ITEMS.find(x => x.id === nftId);
+  if (!n) return;
+  showToast('⏳ Menunggu konfirmasi blockchain...', 'info');
+  setTimeout(() => {
+    if (!STATE.ownedNFTs.includes(nftId)) {
+      STATE.ownedNFTs.push(nftId);
+      STATE.walletBal -= parseFloat(n.price);
+      document.getElementById('walletBal').textContent = Math.max(0, STATE.walletBal).toFixed(3);
+      document.getElementById('nftCount').textContent = STATE.ownedNFTs.length;
+      renderNFTCollection();
+      renderNFTMint();
+      renderOwnedNFTs();
+      addTx('out', n.emoji, `Mint NFT: ${n.name}`, `-${n.price} BNB`, 'baru saja');
+      applyNFTBonus(nftId);
+      showToast(`✅ NFT ${n.name} berhasil di-mint!`, 'success');
+    }
+  }, 2500);
+}
+
+function applyNFTBonus(nftId) {
+  if (nftId === 'grand_castle') {
+    STATE.plots.slice(8, 13).forEach(p => p.locked = false);
+    renderPlots();
+    showToast('🏰 Grand Castle: 5 lahan baru dibuka!', 'success');
+  } else if (nftId === 'royal_farmer') {
+    showToast('👑 Royal Farmer aktif: +100% XP!', 'success');
+  } else if (nftId === 'auto_harvester') {
+    showToast('🤖 Auto Harvester aktif: panen otomatis tiap 30 menit!', 'success');
+    setInterval(() => {
+      let harvested = 0;
+      STATE.plots.forEach((plot, i) => {
+        if (!plot.crop || plot.locked) return;
+        if ((Date.now() - plot.plantedAt) / 1000 >= plot.growTime) {
+          STATE.gold += plot.reward;
+          STATE.totalHarvest++;
+          plot.crop = null; plot.emoji = null; plot.plantedAt = null;
+          harvested++;
+        }
+      });
+      if (harvested > 0) {
+        renderPlots();
+        updateHUD();
+        showToast(`🤖 Auto Harvester: ${harvested} tanaman dipanen!`);
+      }
+    }, 30 * 60 * 1000); // 30 minutes in prod, demo would be less
+  }
+}
+
+// ═══════════════════════════════════════════
+// WALLET
+// ═══════════════════════════════════════════
+async function connectWallet() {
+  showToast('🔗 Menghubungkan wallet...', 'info');
+
+  // Try real MetaMask
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const addr = accounts[0];
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const balance = await provider.getBalance(addr);
+      STATE.walletConnected = true;
+      STATE.walletAddr = addr;
+      STATE.walletBal = parseFloat(ethers.formatEther(balance));
+      STATE.fvtBalance = Math.floor(Math.random() * 10000 + 1000); // Mock FVT
+      finishWalletConnect();
+      return;
+    } catch (e) {
+      console.log('MetaMask rejected, using demo mode');
+    }
+  }
+
+  // Demo mode fallback
+  setTimeout(() => {
+    STATE.walletConnected = true;
+    STATE.walletAddr = '0x742d35Cc6634C0532925a3b8D4C9E3f67c3f4a9';
+    STATE.walletBal = 0.247;
+    STATE.fvtBalance = 4280;
+    finishWalletConnect();
+  }, 1800);
+}
+
+function finishWalletConnect() {
+  document.getElementById('walletDisconnected').style.display = 'none';
+  document.getElementById('walletConnected').style.display = 'block';
+  document.getElementById('walletAddr').textContent = STATE.walletAddr.slice(0,8) + '...' + STATE.walletAddr.slice(-6);
+  document.getElementById('walletBal').textContent = STATE.walletBal.toFixed(3);
+  document.getElementById('walletUSD').textContent = (STATE.walletBal * 625).toFixed(2);
+  document.getElementById('fvtBal').textContent = STATE.fvtBalance.toLocaleString('id-ID');
+  document.getElementById('nftCount').textContent = STATE.ownedNFTs.length;
+  document.getElementById('walletLevel').textContent = STATE.walletBal > 1 ? 'Gold' : STATE.walletBal > 0.1 ? 'Silver' : 'Bronze';
+  renderTxList();
+  showToast('✅ Wallet berhasil terhubung!', 'success');
+  sendToBackend('wallet_connect', { addr: STATE.walletAddr });
+}
+
+function disconnectWallet() {
+  STATE.walletConnected = false;
+  document.getElementById('walletDisconnected').style.display = 'block';
+  document.getElementById('walletConnected').style.display = 'none';
+  showToast('🔌 Wallet terputus.', 'info');
+}
+
+function copyWalletAddr() {
+  navigator.clipboard?.writeText(STATE.walletAddr).then(() => showToast('📋 Alamat disalin!', 'success'));
+}
+
+function renderTxList() {
+  const list = document.getElementById('txList');
+  const allTx = [...TX_DATA_MOCK, ...STATE.transactions];
+  list.innerHTML = allTx.slice(0, 10).map(tx => `
+    <div class="tx-item">
+      <div class="tx-icon ${tx.type}">${tx.emoji}</div>
+      <div class="tx-info">
+        <h4>${tx.name}</h4>
+        <p>${tx.time}</p>
+        ${tx.hash ? `<div class="tx-hash">${tx.hash}</div>` : ''}
+      </div>
+      <div class="tx-amount ${tx.type}">${tx.amount}</div>
+    </div>`).join('');
+}
+
+function addTx(type, emoji, name, amount, time) {
+  STATE.transactions.unshift({ type, emoji, name, amount, time, hash: '0x' + Math.random().toString(16).slice(2,12) });
+  if (STATE.walletConnected) renderTxList();
+}
+
+function simulateWeb3Tx(itemId, item) {
+  showToast('⏳ Konfirmasi di wallet kamu...', 'info');
+  setTimeout(() => {
+    STATE.walletBal -= parseFloat(item.price);
+    document.getElementById('walletBal').textContent = Math.max(0, STATE.walletBal).toFixed(3);
+    addTx('out', item.emoji, `Beli: ${item.name}`, `-${item.price} BNB`, 'baru saja');
+
+    if (itemId === 'premium_bundle') {
+      STATE.boostActive = true; STATE.boostMultiplier = 2;
+      STATE.boostExpiry = Date.now() + 24 * 60 * 60 * 1000;
+      STATE.gold += 5000; STATE.gems += 500;
+      updateBoostBanner();
+    } else if (itemId === 'ultra_vip') {
+      STATE.boostActive = true; STATE.boostMultiplier = 3;
+      STATE.boostExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      STATE.gold += 10000; STATE.gems += 1000;
+    } else if (itemId === 'plot_unlock' || itemId === 'mega_land') {
+      const count = itemId === 'mega_land' ? 4 : 1;
+      let unlocked = 0;
+      STATE.plots.forEach(p => { if (p.locked && unlocked < count) { p.locked = false; unlocked++; } });
+      renderPlots();
+    } else if (itemId === 'starter_bundle') {
+      STATE.gold += 1500; STATE.gems += 50;
+    }
+
+    updateHUD();
+    updateBoostBanner();
+    showToast(`✅ ${item.name} aktif!`, 'success');
+    sendToBackend('web3_purchase', { itemId, txHash: '0x' + Math.random().toString(16).slice(2) });
+  }, 2000);
+}
+
+function openSendModal() { openModal('sendModal'); }
+function openSwapModal() { showToast('🔄 Swap feature coming soon!', 'info'); }
+
+function confirmSend() {
+  const addr = document.getElementById('sendAddr').value;
+  const amount = parseInt(document.getElementById('sendAmount').value);
+  if (!addr.startsWith('0x') || addr.length < 42) { showToast('❌ Alamat tidak valid!', 'error'); return; }
+  if (!amount || amount > STATE.fvtBalance) { showToast('❌ Jumlah tidak valid!', 'error'); return; }
+  STATE.fvtBalance -= amount;
+  document.getElementById('fvtBal').textContent = STATE.fvtBalance.toLocaleString('id-ID');
+  addTx('out', '📤', `Kirim ${amount} FVT`, `-${amount} FVT`, 'baru saja');
+  closeModal('sendModal');
+  showToast(`✅ ${amount} FVT dikirim!`, 'success');
+}
+
+// ═══════════════════════════════════════════
+// BOOST MODAL
+// ═══════════════════════════════════════════
+function openBoostModal() {
+  document.getElementById('boostTiers').innerHTML = [
+    { ico:'🌟', name:'Starter Boost', desc:'1.5x hasil 6 jam + 200 gems', price:'0.005', tier:'starter' },
+    { ico:'🚀', name:'Premium Bundle 🔥 BEST', desc:'2x hasil 24 jam + 500 gems + 5000 koin', price:'0.02', tier:'premium', best:true },
+    { ico:'👑', name:'Ultra VIP Pass', desc:'3x semua • akses eksklusif selamanya + NFT gratis', price:'0.1', tier:'ultra' },
+  ].map(t => `
+    <div class="p2w-tier ${t.best?'best':''}" onclick="buyBoostTier('${t.tier}','${t.price}')">
+      <div class="p2w-ico">${t.ico}</div>
+      <div class="p2w-info"><h4>${t.name}</h4><p>${t.desc}</p></div>
+      <div class="p2w-price"><div class="amount">${t.price}</div><div class="unit">BNB</div></div>
+    </div>`).join('');
+  openModal('boostModal');
+}
+
+function buyBoostTier(tier, price) {
+  closeModal('boostModal');
+  if (!STATE.walletConnected) { showToast('🔗 Connect wallet dulu!', 'info'); switchTab('wallet'); return; }
+  const item = { id:'boost_'+tier, emoji:'⚡', name:`${tier} Boost`, price };
+  simulateWeb3Tx('boost_'+tier, { ...item, price: parseFloat(price) });
+}
+
+function updateBoostBanner() {
+  const title = document.getElementById('boostTitle');
+  const sub = document.getElementById('boostSub');
+  if (STATE.boostActive) {
+    const remaining = Math.max(0, STATE.boostExpiry - Date.now());
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    title.textContent = `⚡ Boost Aktif: ${STATE.boostMultiplier}x Hasil!`;
+    sub.textContent = `Sisa: ${h}j ${m}m · Klik untuk perpanjang`;
+  } else {
+    title.textContent = 'Aktifkan Premium Boost';
+    sub.textContent = '2x hasil · akses semua tanaman premium';
+  }
+}
+
+// ═══════════════════════════════════════════
+// DAILY QUESTS
+// ═══════════════════════════════════════════
+function openDailyModal() {
+  // Check-in grid (7 days)
+  const today = new Date().getDay();
+  document.getElementById('streakDay').textContent = STATE.streak + 1;
+  document.getElementById('checkinGrid').innerHTML = Array.from({length:7}, (_, i) => {
+    const rewards = [50, 80, 120, 200, 300, 500, '💎10'];
+    const done = i < STATE.streak % 7;
+    const isToday = i === STATE.streak % 7;
+    return `<div class="checkin-day ${done?'done':''} ${isToday?'today':''}">
+      <span class="ci-ico">${done?'✅':isToday?'🎁':'🔒'}</span>
+      <div class="ci-lbl">${typeof rewards[i]==='number'?'🪙'+rewards[i]:rewards[i]}</div>
+    </div>`;
+  }).join('');
+
+  const quests = [
+    { ico:'🌾', name:'Panen 5 Tanaman', prog:`${STATE.questProgress.harvest}/5`, done: STATE.questProgress.harvest >= 5, reward:'300🪙 + 20💎' },
+    { ico:'🌱', name:'Tanam 3 Kali', prog:`${STATE.questProgress.plant}/3`, done: STATE.questProgress.plant >= 3, reward:'150🪙' },
+    { ico:'💰', name:'Habiskan 200 Koin', prog:`${STATE.questProgress.spend}/200`, done: STATE.questProgress.spend >= 200, reward:'50💎' },
+    { ico:'🔗', name:'Ajak 1 Teman', prog:'0/1', done: false, reward:'500🪙 + 30💎' },
+  ];
+
+  document.getElementById('questList').innerHTML = quests.map(q => `
+    <div style="background:var(--bg);border:1px solid ${q.done?'var(--green)':'var(--border)'};border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+      <div style="font-size:22px">${q.ico}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:800">${q.name}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px">Reward: ${q.reward}</div>
+        <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:4px;margin-top:5px;overflow:hidden">
+          <div style="height:100%;background:var(--green-l);width:${q.done?100:0}%;transition:width .5s"></div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:800;color:${q.done?'var(--green-l)':'var(--text3)'}">
+        ${q.done ? '✅' : q.prog}
+      </div>
+    </div>`).join('');
+
+  openModal('dailyModal');
+}
+
+function checkQuestComplete() {
+  if (!STATE.questRewarded && STATE.questProgress.harvest >= 5 && STATE.questProgress.plant >= 3) {
+    STATE.questRewarded = true;
+    STATE.gold += 300; STATE.gems += 20;
+    updateHUD();
+    showToast('🎉 Misi harian selesai! +300🪙 +20💎', 'success');
+  }
+}
+
+function updateQuestBar() {
+  document.getElementById('questProg').textContent = `${STATE.questProgress.harvest}/5`;
+  document.getElementById('questDesc').textContent =
+    STATE.questRewarded ? '✅ Semua misi selesai! Besok ada misi baru'
+    : `Panen ${5 - STATE.questProgress.harvest} lagi · Reward: 300🪙 + 20💎`;
+}
+
+// ═══════════════════════════════════════════
+// LEADERBOARD
+// ═══════════════════════════════════════════
+let lbMode = 'harvest';
+function showLB(mode, el) {
+  document.querySelectorAll('#page-leaderboard .filter-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  lbMode = mode;
+  renderLeaderboard(mode);
+}
+
+function renderLeaderboard(mode) {
+  const myEntry = { rank:7, name:STATE.playerName, emoji:'👨‍🌾', harvest:STATE.totalHarvest, level:STATE.level, nfts:STATE.ownedNFTs.length, isMe:true };
+  const fullList = [...LEADERBOARD_DATA.slice(0,6), myEntry, ...LEADERBOARD_DATA.slice(6)];
+  fullList.sort((a,b) => mode === 'harvest' ? b.harvest - a.harvest : mode === 'level' ? b.level - a.level : mode === 'nft' ? b.nfts - a.nfts : b.harvest - a.harvest);
+  fullList.forEach((p,i) => p.rank = i+1);
+
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('lbList').innerHTML = fullList.map(p => `
+    <div class="lb-item ${p.rank<=3?'top'+p.rank:''} ${p.isMe?'mine':''}">
+      <div class="lb-rank">${p.rank <= 3 ? medals[p.rank-1] : p.rank}</div>
+      <div class="lb-avatar">${p.emoji}</div>
+      <div class="lb-data">
+        <div class="lb-name">${p.name}${p.isMe?'<span class="me-badge">KAMU</span>':''}</div>
+        <div class="lb-sub">Level ${p.level} · ${p.nfts} NFT</div>
+      </div>
+      <div class="lb-score">
+        ${mode==='harvest'?p.harvest.toLocaleString('id-ID'):mode==='level'?`Lv.${p.level}`:p.nfts}
+        <small>${mode==='harvest'?'panen':mode==='level'?'level':'NFT'}</small>
+      </div>
+    </div>`).join('');
+
+  const me = fullList.find(p => p.isMe);
+  if (me) {
+    document.getElementById('myRank').textContent = '#' + me.rank;
+    document.getElementById('myScore').textContent = me.harvest + ' panen';
+  }
+}
+
+// ═══════════════════════════════════════════
+// HUD
+// ═══════════════════════════════════════════
+function updateHUD() {
+  document.getElementById('goldCoins').textContent = STATE.gold.toLocaleString('id-ID');
+  document.getElementById('gems').textContent = STATE.gems.toLocaleString('id-ID');
+  document.getElementById('playerLevel').textContent = STATE.level;
+  document.getElementById('farmLevel').textContent = STATE.level;
+  document.getElementById('farmXP').textContent = STATE.xp;
+  document.getElementById('farmXPMax').textContent = STATE.xpMax;
+  document.getElementById('xpFill').style.width = Math.round(STATE.xp / STATE.xpMax * 100) + '%';
+  document.getElementById('statHarvest').textContent = STATE.totalHarvest.toLocaleString('id-ID');
+  document.getElementById('statStreak').textContent = STATE.streak;
+  const active = STATE.plots.filter(p => p.crop && !p.locked).length;
+  document.getElementById('statPlots').textContent = active;
+  // Earn rate estimate
+  const rate = STATE.plots.filter(p => p.crop && !p.locked).reduce((s, p) => s + (p.reward / (p.growTime / 3600)), 0);
+  document.getElementById('statEarn').textContent = '+' + Math.floor(rate);
+  if (STATE.fvtBalance > 0) document.getElementById('fvtBal').textContent = STATE.fvtBalance.toLocaleString('id-ID');
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+document.getElementById('tabBar').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  const name = tab.dataset.tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  const pg = document.getElementById('page-' + name);
+  if (pg) pg.classList.add('active');
+});
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === name);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + name);
+  if (pg) pg.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
+});
+
+// ═══════════════════════════════════════════
+// BACKEND COMMUNICATION
+// ═══════════════════════════════════════════
+function sendToBackend(action, data) {
+  const tg = window.Telegram?.WebApp;
+  if (!tg) return;
+  try {
+    // In production: use tg.sendData or fetch to your API
+    // tg.sendData(JSON.stringify({ action, data, userId: STATE.userId, ts: Date.now() }));
+    console.log('[BACKEND]', action, data);
+  } catch (e) {}
+}
+
+// ═══════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════
+let toastTimer = null;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function spawnCoinPop(el, text) {
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'coin-pop';
+  pop.textContent = text;
+  pop.style.left = (rect.left + rect.width/2 - 20) + 'px';
+  pop.style.top = (rect.top - 10) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 950);
+}
+
+function formatTime(s) {
+  if (s >= 3600) return Math.floor(s/3600) + 'j' + Math.floor((s%3600)/60) + 'm';
+  if (s >= 60) return Math.floor(s/60) + ':' + String(s % 60).padStart(2,'0');
+  return s + 'd';
+}
+</script>
+</body>
+</html>
