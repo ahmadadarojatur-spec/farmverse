@@ -49,9 +49,9 @@ from telegram.ext import (
 
 load_dotenv()
 
-BOT_TOKEN    = os.getenv("BOT_TOKEN", "")
+BOT_TOKEN    = os.getenv("8722817188:AAGETX1eo79Y8OWs1hAQDseKN9tVizfJ9oo", "")
 GAME_URL     = os.getenv("GAME_URL", "https://farmverse-liart.vercel.app")
-ADMIN_ID     = int(os.getenv("ADMIN_ID", "0"))
+ADMIN_ID     = int(os.getenv("5076116827", "0"))
 HMAC_SECRET  = os.getenv("HMAC_SECRET", "farmverse_secret_2025").encode()
 BNB_RPC      = os.getenv("BNB_RPC", "https://bsc-dataseed.binance.org/")
 DB_PATH      = "farmverse.db"
