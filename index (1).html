@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>FarmVerse P2E 🌾</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
+:root{
+  --g:#2d8a4e;--gl:#4caf72;--gd:#1a5c33;
+  --gold:#f5a623;--gold-d:#c47d00;--gold-l:#ffd166;
+  --red:#e53935;--red-l:#ff6b6b;
+  --pur:#7c3aed;--pur-l:#a855f7;--pur-ll:#c084fc;
+  --teal:#0d9488;--teal-l:#14b8a6;
+  --blue:#1a6cf5;--orange:#f97316;
+  --bg:#0e180e;--s1:#162416;--s2:#1c2e1c;--s3:#243424;
+  --tx:#e8f5e9;--tx2:#86a98a;--tx3:#4a6b4e;
+  --b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);
+  --gold-glow:rgba(245,166,35,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:#080e08;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s}
+#loading.out{opacity:0;pointer-events:none}
+.ld-logo{font-family:'Fredoka One';font-size:48px;color:var(--gold);margin-bottom:4px}
+.ld-sub{font-size:13px;color:var(--tx2);margin-bottom:28px}
+.ld-bar{width:200px;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden}
+.ld-fill{height:100%;background:linear-gradient(90deg,var(--gl),var(--gold));animation:ld 2.4s ease-out forwards}
+@keyframes ld{from{width:0}to{width:100%}}
+.ld-tip{font-size:11px;color:var(--tx3);margin-top:14px;text-align:center;max-width:220px;line-height:1.5}
+/* ── TOPBAR ── */
+.topbar{background:linear-gradient(135deg,#0a160a,#14201a);padding:9px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(77,175,74,.28);position:sticky;top:0;z-index:200;backdrop-filter:blur(14px)}
+.logo{font-family:'Fredoka One';font-size:19px;color:var(--gold);display:flex;align-items:center;gap:5px}
+.logo .v{font-family:'Nunito';font-size:11px;font-weight:900;background:var(--gd);color:var(--gl);padding:2px 7px;border-radius:10px}
+.chips{display:flex;gap:5px}
+.chip{background:rgba(255,255,255,0.05);border:1px solid var(--b2);border-radius:18px;padding:4px 9px;font-size:11px;font-weight:800;display:flex;align-items:center;gap:3px}
+.chip.g{border-color:rgba(245,166,35,.3);background:rgba(245,166,35,.07)}
+.chip.m{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.07)}
+.lvbadge{background:linear-gradient(135deg,var(--gd),#082810);border:1px solid var(--g);border-radius:9px;padding:3px 8px;font-size:11px;font-weight:900;color:var(--gl)}
+/* ── TABS ── */
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--b1);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:56px;padding:8px 3px;text-align:center;font-size:10px;font-weight:800;color:var(--tx3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;position:relative}
+.tab .ti{font-size:16px;display:block;margin-bottom:1px}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.tbadge{position:absolute;top:4px;right:6px;background:var(--red);color:#fff;font-size:8px;font-weight:900;padding:1px 4px;border-radius:7px;min-width:14px;text-align:center}
+/* ── PAGES ── */
+.page{display:none;padding:12px;padding-bottom:88px;animation:pgIn .2s ease}
+.page.on{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ── UTILS ── */
+.sec{font-size:10px;font-weight:900;color:var(--tx3);text-transform:uppercase;letter-spacing:1.4px;margin:14px 0 8px;display:flex;align-items:center;gap:7px}
+.sec::after{content:'';flex:1;height:1px;background:var(--b1)}
+.card{background:var(--s2);border:1px solid var(--b1);border-radius:14px;padding:13px}
+.row{display:flex;align-items:center;gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+/* ── FARM HEADER ── */
+.fhdr{background:linear-gradient(160deg,#152215,#0c180c);border:1px solid rgba(77,175,74,.22);border-radius:16px;padding:13px;margin-bottom:11px;display:flex;align-items:center;gap:11px}
+.avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--gold));display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid var(--gold);flex-shrink:0;animation:bob 3s ease-in-out infinite;position:relative}
+.avatar .eq{position:absolute;bottom:-2px;right:-2px;font-size:14px;background:var(--bg);border-radius:50%;padding:1px}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.fi{flex:1;min-width:0}
+.fi h2{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi .sub{font-size:10px;color:var(--tx2);margin-top:1px}
+.xpbar{background:rgba(255,255,255,0.07);border-radius:5px;height:5px;margin-top:5px;overflow:hidden}
+.xpfill{height:100%;background:linear-gradient(90deg,var(--gl),var(--gold));border-radius:5px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+/* ── STAT CARDS ── */
+.stc .val{font-size:15px;font-weight:900;color:var(--gold)}
+.stc .lbl{font-size:9px;color:var(--tx2);margin-top:1px;font-weight:700}
+/* ── QUEST BAR ── */
+.qbar{background:linear-gradient(135deg,#18280e,#0c1c08);border:1px solid rgba(77,175,74,.28);border-radius:13px;padding:11px 13px;margin-bottom:11px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:transform .1s}
+.qbar:active{transform:scale(0.98)}
+/* ── P2E EARN BAR ── */
+.earnbar{background:linear-gradient(135deg,#0a1a2a,#061020);border:1px solid rgba(26,108,245,.35);border-radius:13px;padding:11px 13px;margin-bottom:11px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:transform .1s}
+.earnbar:active{transform:scale(0.98)}
+/* ── PLOT GRID ── */
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:11px}
+.plot{aspect-ratio:1;border-radius:11px;background:var(--s3);border:2px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:transform .1s,border-color .2s;overflow:hidden}
+.plot:active{transform:scale(0.91)}
+.plot.locked{opacity:.3;cursor:default}
+.plot.growing{border-color:var(--g);background:#122012}
+.plot.ready{border-color:var(--gold);background:#1a1500;animation:pr 1.4s infinite}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 var(--gold-glow)}50%{box-shadow:0 0 0 7px transparent}}
+.pemoji{font-size:24px;line-height:1}
+.ptimer{font-size:8px;font-weight:800;color:var(--gold);margin-top:2px;font-family:monospace}
+.pbar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,200,0,.12)}
+.pbarfill{height:100%;background:var(--gl);transition:width 1s linear}
+.plock{font-size:17px}
+.plockp{font-size:8px;font-weight:800;color:var(--gold);margin-top:1px}
+/* ── HARVEST BTN ── */
+.hvbtn{width:100%;padding:12px;border-radius:13px;background:linear-gradient(135deg,var(--gold),#c47d00);border:none;color:#2d1600;font-family:'Fredoka One';font-size:15px;cursor:pointer;transition:transform .1s,opacity .2s;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:11px}
+.hvbtn:active{transform:scale(0.97)}
+.hvbtn:disabled{opacity:.35;cursor:default}
+/* ── SHOP ── */
+.sitem{background:var(--s2);border:1px solid var(--b1);border-radius:13px;padding:12px;display:flex;align-items:center;gap:10px}
+.sitem.ft{border-color:rgba(245,166,35,.38);background:#181400}
+.sitem.w3{border-color:rgba(168,85,247,.3);background:#100018}
+.semoji{font-size:34px;flex-shrink:0}
+.sinfo{flex:1;min-width:0}
+.sinfo h3{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sinfo p{font-size:10px;color:var(--tx2);margin-top:2px;line-height:1.4}
+.sbadge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:7px;display:inline-block;margin-bottom:3px}
+.b-basic{background:#182e18;color:#7cfc00}
+.b-p2w{background:#3a2000;color:var(--gold)}
+.b-nft{background:#180055;color:var(--pur-ll)}
+.b-hot{background:#380000;color:var(--red-l)}
+.b-p2e{background:#003820;color:#4ade80}
+.bbtn{padding:7px 11px;border-radius:9px;border:none;font-family:'Nunito';font-weight:800;font-size:10px;cursor:pointer;transition:transform .1s;white-space:nowrap;flex-shrink:0}
+.bbtn:active{transform:scale(0.93)}
+.bbtn.bg{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#2d1600}
+.bbtn.bm{background:linear-gradient(135deg,var(--pur),#5b21b6);color:#fff}
+.bbtn.bb{background:linear-gradient(135deg,#f0b90b,#d4a009);color:#1a1200}
+.bbtn.bt{background:linear-gradient(135deg,var(--teal),#0f766e);color:#fff}
+.bbtn.bse{background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff}
+.bbtn.bp2e{background:linear-gradient(135deg,var(--blue),#1250c4);color:#fff}
+.bbtn:disabled{opacity:.35;cursor:default}
+/* ── INVENTORY ── */
+.inv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.invitem{background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:11px 8px;text-align:center;position:relative;transition:border-color .2s}
+.invitem.sel{border-color:var(--teal)}
+.invitem .iemoji{font-size:30px}
+.invitem .iname{font-size:10px;font-weight:800;margin-top:4px;color:var(--tx)}
+.invitem .iqty{font-size:12px;font-weight:900;color:var(--gold-l);margin-top:2px}
+.invitem .itype{font-size:8px;color:var(--tx3);margin-top:1px}
+.inv-empty{text-align:center;padding:40px 20px;color:var(--tx3)}
+/* ── MARKET ── */
+.mlisting{background:var(--s2);border:1px solid var(--b1);border-radius:13px;padding:12px;display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.mlisting.mine{border-color:rgba(245,166,35,.3)}
+.mlavatar{width:46px;height:46px;background:var(--s3);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.mlinfo{flex:1;min-width:0}
+.mlinfo h4{font-size:12px;font-weight:800}
+.mlinfo p{font-size:10px;color:var(--tx2);margin-top:2px}
+.mlinfo .seller{font-size:9px;color:var(--tx3);margin-top:2px}
+.mlprice{text-align:right;flex-shrink:0}
+.mlprice .amt{font-size:13px;font-weight:900;color:var(--gold)}
+.mlprice .cur{font-size:9px;color:var(--tx2)}
+/* ── WALLET ── */
+.walcard{background:linear-gradient(135deg,#08001e,#160030);border:1px solid rgba(168,85,247,.4);border-radius:17px;padding:16px;margin-bottom:13px;position:relative;overflow:hidden}
+.walcard::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:radial-gradient(circle,rgba(168,85,247,.2),transparent);border-radius:50%}
+.wal-lbl{font-size:9px;color:var(--pur-ll);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.wal-addr{font-family:monospace;font-size:11px;background:rgba(255,255,255,0.06);padding:7px 11px;border-radius:7px;margin:7px 0;cursor:pointer;word-break:break-all}
+.wal-addr:active{background:rgba(255,255,255,.1)}
+.wal-bal{font-size:24px;font-weight:900}
+.wal-sub{font-size:11px;color:var(--tx2);margin-top:3px}
+.wal-net{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:18px;font-size:10px;font-weight:700;margin-top:7px;background:rgba(240,185,11,.12);color:#f0b90b;border:1px solid rgba(240,185,11,.28)}
+.txitem{background:var(--s2);border:1px solid var(--b1);border-radius:11px;padding:10px 12px;display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.txico{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.txico.in{background:rgba(74,222,128,.1)}
+.txico.out{background:rgba(239,68,68,.1)}
+.txico.pend{background:rgba(251,191,36,.1)}
+.txinfo{flex:1;min-width:0}
+.txinfo h4{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.txinfo p{font-size:9px;color:var(--tx2);margin-top:1px}
+.txhash{font-family:monospace;font-size:8px;color:var(--tx3)}
+.txamt{font-size:11px;font-weight:800;flex-shrink:0;text-align:right}
+.txamt.in{color:#4ade80}
+.txamt.out{color:var(--red-l)}
+.txamt.pend{color:#fbbf24}
+/* ── P2E PAGE ── */
+.p2e-hero{background:linear-gradient(160deg,#040e28,#081a10);border:1px solid rgba(26,108,245,.35);border-radius:16px;padding:16px;margin-bottom:12px;text-align:center}
+.p2e-rate{font-size:28px;font-weight:900;color:#4ade80;margin:8px 0}
+.p2e-rate span{font-size:13px;color:var(--tx2)}
+.earn-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.earnact{background:var(--s2);border:1px solid var(--b1);border-radius:13px;padding:14px;text-align:center;cursor:pointer;transition:all .15s}
+.earnact:active{transform:scale(0.96)}
+.earnact .ea-ico{font-size:28px;margin-bottom:6px}
+.earnact .ea-ttl{font-size:12px;font-weight:800}
+.earnact .ea-sub{font-size:10px;color:var(--tx2);margin-top:2px}
+.earnact .ea-rwrd{font-size:11px;font-weight:800;color:#4ade80;margin-top:4px}
+/* ── TOPUP/WITHDRAW MODAL ── */
+.topup-tabs{display:flex;gap:6px;margin-bottom:14px}
+.topup-tab{flex:1;padding:8px;border-radius:9px;border:1px solid var(--b1);background:transparent;color:var(--tx2);font-family:'Nunito';font-weight:700;font-size:11px;cursor:pointer;text-align:center;transition:all .15s}
+.topup-tab.on{background:var(--s3);border-color:var(--pur-l);color:var(--pur-ll)}
+.crypto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.cryp-btn{background:var(--s3);border:1px solid var(--b1);border-radius:11px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s}
+.cryp-btn:active{transform:scale(0.94)}
+.cryp-btn.sel{border-color:var(--teal);background:rgba(13,148,136,.12)}
+.cryp-btn .ce{font-size:22px;margin-bottom:3px}
+.cryp-btn .cs{font-size:10px;font-weight:800}
+.cryp-btn .cp{font-size:9px;color:var(--tx2)}
+/* ── NFT PAGE ── */
+.nft-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.nftcard{background:linear-gradient(160deg,#0e0026,#080e18);border:1px solid rgba(168,85,247,.28);border-radius:15px;padding:13px;text-align:center;cursor:pointer;transition:transform .18s,border-color .2s;position:relative}
+.nftcard:active{transform:scale(0.95)}
+.nftcard.owned{border-color:rgba(245,166,35,.55);background:linear-gradient(160deg,#160e00,#0c0800)}
+.nftcard.listed{border-color:rgba(13,148,136,.55)}
+.nft-rar{position:absolute;top:7px;left:7px;font-size:8px;font-weight:800;padding:2px 6px;border-radius:7px}
+.r-c{background:#182e18;color:#4ade80}
+.r-r{background:#18006e;color:var(--pur-ll)}
+.r-e{background:#2e0018;color:var(--red-l)}
+.r-l{background:#2e1800;color:var(--gold)}
+.nft-e{font-size:38px;margin:8px 0}
+.nft-nm{font-size:11px;font-weight:800}
+.nft-bn{font-size:9px;color:var(--pur-ll);margin-top:3px;line-height:1.4}
+.nftcard.owned .nft-bn{color:var(--gold-l)}
+.nft-pt{margin-top:9px;padding:5px;border-radius:7px;background:rgba(255,255,255,.05);font-size:10px;font-weight:800;color:var(--pur-ll);display:flex;align-items:center;justify-content:center;gap:4px}
+.nftcard.owned .nft-pt{color:#4ade80;background:rgba(74,222,128,.08)}
+/* ── LB ── */
+.lbitem{background:var(--s2);border:1px solid var(--b1);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.lbitem.t1{border-color:var(--gold);background:#140e00}
+.lbitem.t2{border-color:rgba(192,192,192,.45)}
+.lbitem.t3{border-color:rgba(160,82,45,.45)}
+.lbitem.me{border-color:var(--g);background:#0c160c}
+.lbrank{font-size:18px;font-weight:900;width:26px;text-align:center;flex-shrink:0}
+.lbav{width:36px;height:36px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.lbdata{flex:1;min-width:0}
+.lbnm{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbsub{font-size:9px;color:var(--tx2);margin-top:1px}
+.lbsc{font-size:12px;font-weight:900;color:var(--gold);flex-shrink:0;text-align:right}
+.me-tag{font-size:8px;background:var(--gd);color:var(--gl);padding:1px 5px;border-radius:7px;font-weight:700;margin-left:4px}
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+.overlay.on{opacity:1;pointer-events:all}
+.modal{background:var(--s2);border:1px solid var(--b2);border-radius:20px 20px 0 0;padding:16px;width:100%;max-width:430px;transform:translateY(36px);transition:transform .22s;max-height:88vh;overflow-y:auto}
+.overlay.on .modal{transform:translateY(0)}
+.mhandle{width:34px;height:4px;background:var(--b2);border-radius:2px;margin:0 auto 13px}
+.modal h2{font-size:16px;font-weight:900;text-align:center;margin-bottom:2px}
+.modal .msub{font-size:11px;color:var(--tx2);text-align:center;margin-bottom:13px}
+/* ── CROP OPTIONS ── */
+.copts{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px}
+.copt{background:var(--bg);border:2px solid var(--b1);border-radius:11px;padding:9px 5px;text-align:center;cursor:pointer;transition:all .15s}
+.copt:active{transform:scale(0.93)}
+.copt.sel{border-color:var(--gl);background:#142014}
+.copt.locked{opacity:.35;cursor:default}
+.copt .ce{font-size:26px}
+.copt .cn{font-size:9px;font-weight:800;margin-top:2px}
+.copt .ct{font-size:8px;color:var(--tx2);margin-top:1px}
+.copt .cr{font-size:9px;color:var(--gold);font-weight:800;margin-top:2px}
+/* ── INPUTS ── */
+.field{margin:10px 0}
+.field label{font-size:11px;font-weight:700;color:var(--tx2);display:block;margin-bottom:5px}
+.finput{width:100%;background:var(--bg);border:1px solid var(--b2);border-radius:9px;padding:9px 12px;color:var(--tx);font-family:'Nunito';font-size:13px;font-weight:700;outline:none}
+.finput:focus{border-color:var(--teal)}
+.finfo{background:rgba(13,148,136,.09);border:1px solid rgba(13,148,136,.28);border-radius:9px;padding:9px 11px;font-size:10px;color:var(--tx2);line-height:1.6;margin-bottom:11px}
+.finfo.warn{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:var(--red-l)}
+/* ── BUTTONS ── */
+.pbtn{width:100%;padding:12px;border-radius:13px;background:linear-gradient(135deg,var(--g),var(--gd));border:none;color:#fff;font-family:'Fredoka One';font-size:15px;cursor:pointer;transition:transform .1s;display:flex;align-items:center;justify-content:center;gap:7px}
+.pbtn:active{transform:scale(0.97)}
+.pbtn.teal{background:linear-gradient(135deg,var(--teal),#0f766e)}
+.pbtn.pur{background:linear-gradient(135deg,var(--pur),#5b21b6)}
+.pbtn.blue{background:linear-gradient(135deg,var(--blue),#1250c4)}
+.pbtn.red{background:linear-gradient(135deg,var(--red),#b91c1c)}
+.pbtn.gold{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#2d1600}
+.cbtn{width:100%;padding:10px;border-radius:12px;background:transparent;border:1px solid var(--b2);color:var(--tx2);font-family:'Nunito';font-weight:700;font-size:12px;cursor:pointer;margin-top:5px}
+/* ── TOAST ── */
+#toast{position:fixed;top:66px;left:50%;transform:translateX(-50%) translateY(-14px);background:var(--s3);border:1px solid var(--g);border-radius:18px;padding:8px 16px;font-size:11px;font-weight:800;z-index:800;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--red);background:#1a0808}
+#toast.inf{border-color:var(--pur);background:#0c0018}
+#toast.suc{border-color:var(--g);background:#081408}
+/* ── COIN POP ── */
+.coinpop{position:fixed;font-size:14px;font-weight:900;font-family:'Fredoka One';pointer-events:none;z-index:700;animation:cpop .8s ease-out forwards;color:var(--gold)}
+@keyframes cpop{0%{transform:translateY(0) scale(1.2);opacity:1}100%{transform:translateY(-65px) scale(.4);opacity:0}}
+/* ── BAN SCREEN ── */
+#banscreen{position:fixed;inset:0;background:#080000;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+#banscreen.on{display:flex}
+/* ── MISC ── */
+.divider{height:1px;background:var(--b1);margin:12px 0}
+.badge-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.badge{padding:3px 10px;border-radius:18px;font-size:10px;font-weight:700}
+.info-table .ir{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--b1);font-size:11px;color:var(--tx2)}
+.info-table .ir:last-child{border-bottom:none}
+.info-table .ir span:last-child{color:var(--tx);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="ld-logo">🌾 FarmVerse</div>
+  <div class="ld-sub">Play-to-Earn · BNB Chain</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+  <div class="ld-tip" id="ldtip">Memuat data pertanian kamu...</div>
+</div>
+
+<!-- Ban Screen -->
+<div id="banscreen">
+  <div style="font-size:60px;margin-bottom:14px">🚫</div>
+  <h2 style="font-size:22px;font-weight:900;color:var(--red);margin-bottom:8px">Akun Ditangguhkan</h2>
+  <p style="font-size:12px;color:var(--tx2);line-height:1.6;max-width:280px">Aktivitas tidak valid terdeteksi. Hubungi <strong>@farmverse_support</strong> jika ada kesalahan.</p>
+  <p style="margin-top:10px;font-size:10px;color:var(--red-l)">Kode: <span id="bancode">CHT-000</span></p>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="logo">🌾 FarmVerse <span class="v">P2E</span></div>
+  <div class="chips">
+    <div class="chip g">🪙<span id="hGold">0</span></div>
+    <div class="chip m">💎<span id="hGems">0</span></div>
+    <div class="lvbadge">Lv.<span id="hLv">1</span></div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="tabbar">
+  <div class="tab on" data-p="farm"><span class="ti">🌱</span>Farm</div>
+  <div class="tab" data-p="p2e"><span class="ti">💰</span>P2E</div>
+  <div class="tab" data-p="inv"><span class="ti">🎒</span>Tas<span class="tbadge" id="invbadge" style="display:none">!</span></div>
+  <div class="tab" data-p="shop"><span class="ti">🏪</span>Toko</div>
+  <div class="tab" data-p="mkt"><span class="ti">🔄</span>Market</div>
+  <div class="tab" data-p="nft"><span class="ti">💎</span>NFT</div>
+  <div class="tab" data-p="wal"><span class="ti">💼</span>Wallet</div>
+  <div class="tab" data-p="lb"><span class="ti">🏆</span>Top</div>
+</div>
+
+<!-- ═══ FARM PAGE ═══ -->
+<div class="page on" id="pg-farm">
+  <div class="fhdr">
+    <div class="avatar" id="avatarEl">👨‍🌾<span class="eq" id="eqNft"></span></div>
+    <div class="fi">
+      <h2 id="pName">Farmer</h2>
+      <div class="sub">🏡 Lv.<span id="pLv">1</span> · <span id="pXp">0</span>/<span id="pXpMax">1000</span> XP</div>
+      <div class="xpbar"><div class="xpfill" id="xpfill" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="g4" style="margin-bottom:11px">
+    <div class="card stc text-center" style="text-align:center"><div class="val" id="sHarvest">0</div><div class="lbl">Panen</div></div>
+    <div class="card stc text-center" style="text-align:center"><div class="val" id="sActive">0</div><div class="lbl">Aktif</div></div>
+    <div class="card stc text-center" style="text-align:center"><div class="val" id="sEarn">+0</div><div class="lbl">FVT/h</div></div>
+    <div class="card stc text-center" style="text-align:center"><div class="val" id="sStreak">0🔥</div><div class="lbl">Streak</div></div>
+  </div>
+  <!-- Quest bar -->
+  <div class="qbar" onclick="openModal('mdQuest')">
+    <div style="font-size:22px">📋</div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:800">Misi Harian</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:2px" id="questDesc">Panen 5x · Reward: 300🪙 +20💎 +50 FVT</div>
+    </div>
+    <div style="font-size:12px;font-weight:900;color:var(--gl)" id="questProg">0/5</div>
+  </div>
+  <!-- P2E earn bar -->
+  <div class="earnbar" onclick="switchTab('p2e')">
+    <div style="font-size:22px">💰</div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:800;color:#4ade80">P2E Aktif · Hasilkan FVT Token Nyata!</div>
+      <div style="font-size:10px;color:#6ee7b7;margin-top:2px" id="p2eRateBar">Estimasi: 0 FVT/hari · Connect wallet untuk withdraw</div>
+    </div>
+    <div style="color:#4ade80;font-size:16px">›</div>
+  </div>
+  <div class="sec">📍 Lahan Pertanian</div>
+  <div class="pgrid" id="plotGrid"></div>
+  <button class="hvbtn" id="hvAllBtn" onclick="harvestAll()" disabled>⏳ Belum Ada Panen</button>
+  <div class="sec">🎒 Inventory Terbaru</div>
+  <div id="invPreview" style="margin-bottom:8px"></div>
+  <button class="cbtn" onclick="switchTab('inv')">Lihat Semua Inventory →</button>
+</div>
+
+<!-- ═══ P2E PAGE ═══ -->
+<div class="page" id="pg-p2e">
+  <div class="p2e-hero">
+    <div style="font-size:11px;color:#6ee7b7;font-weight:700;letter-spacing:1px;text-transform:uppercase">Total FVT Dihasilkan</div>
+    <div class="p2e-rate" id="p2eTotalFvt">0 <span>FVT</span></div>
+    <div style="font-size:11px;color:var(--tx2)">≈ $<span id="p2eUSD">0.00</span> USD · Rate: 1 FVT = $<span id="fvtRate">0.05</span></div>
+    <div style="margin-top:10px;display:flex;gap:8px;justify-content:center">
+      <button class="pbtn blue" style="flex:1;padding:10px" onclick="openModal('mdTopup')">📥 Topup</button>
+      <button class="pbtn teal" style="flex:1;padding:10px" onclick="openModal('mdWithdraw')">📤 Withdraw</button>
+    </div>
+  </div>
+  <div class="sec">💡 Cara Hasilkan FVT</div>
+  <div class="earn-actions">
+    <div class="earnact" onclick="switchTab('farm')">
+      <div class="ea-ico">🌾</div>
+      <div class="ea-ttl">Farming</div>
+      <div class="ea-sub">Tanam & panen tanaman</div>
+      <div class="ea-rwrd">+50~850 FVT/panen</div>
+    </div>
+    <div class="earnact" onclick="openModal('mdQuest')">
+      <div class="ea-ico">📋</div>
+      <div class="ea-ttl">Misi Harian</div>
+      <div class="ea-sub">Selesaikan quest harian</div>
+      <div class="ea-rwrd">+50~200 FVT/hari</div>
+    </div>
+    <div class="earnact" onclick="switchTab('mkt')">
+      <div class="ea-ico">🔄</div>
+      <div class="ea-ttl">Trading</div>
+      <div class="ea-sub">Jual hasil panen di market</div>
+      <div class="ea-rwrd">Harga pasar bebas</div>
+    </div>
+    <div class="earnact" onclick="openModal('mdRef')">
+      <div class="ea-ico">👥</div>
+      <div class="ea-ttl">Referral</div>
+      <div class="ea-sub">Ajak teman main</div>
+      <div class="ea-rwrd">+200 FVT/referral</div>
+    </div>
+    <div class="earnact" onclick="switchTab('nft')">
+      <div class="ea-ico">💎</div>
+      <div class="ea-ttl">NFT Staking</div>
+      <div class="ea-sub">Stake NFT untuk pasif</div>
+      <div class="ea-rwrd">+1~5% APY FVT</div>
+    </div>
+    <div class="earnact" onclick="openModal('mdTournament')">
+      <div class="ea-ico">🏆</div>
+      <div class="ea-ttl">Turnamen</div>
+      <div class="ea-sub">Kompetisi mingguan</div>
+      <div class="ea-rwrd">Top 10 → 500~5000 FVT</div>
+    </div>
+  </div>
+  <div class="sec">📊 Statistik P2E Kamu</div>
+  <div class="card info-table">
+    <div class="ir"><span>Total FVT Dihasilkan</span><span id="s2TotalFvt">0 FVT</span></div>
+    <div class="ir"><span>FVT dari Farming</span><span id="s2FvtFarm">0 FVT</span></div>
+    <div class="ir"><span>FVT dari Trading</span><span id="s2FvtTrade">0 FVT</span></div>
+    <div class="ir"><span>FVT dari Referral</span><span id="s2FvtRef">0 FVT</span></div>
+    <div class="ir"><span>Total Withdraw</span><span id="s2Withdraw">0 FVT</span></div>
+    <div class="ir"><span>Wallet Status</span><span id="s2Wallet">Belum terhubung</span></div>
+  </div>
+</div>
+
+<!-- ═══ INVENTORY PAGE ═══ -->
+<div class="page" id="pg-inv">
+  <div class="row" style="margin-bottom:11px;gap:6px">
+    <div class="card" style="flex:1;text-align:center;padding:10px">
+      <div style="font-size:18px;font-weight:900;color:var(--gold)" id="invTotalItems">0</div>
+      <div style="font-size:9px;color:var(--tx2);font-weight:700">Total Item</div>
+    </div>
+    <div class="card" style="flex:1;text-align:center;padding:10px">
+      <div style="font-size:18px;font-weight:900;color:#4ade80" id="invTotalVal">0</div>
+      <div style="font-size:9px;color:var(--tx2);font-weight:700">Est. FVT Value</div>
+    </div>
+    <div class="card" style="flex:1;text-align:center;padding:10px">
+      <div style="font-size:18px;font-weight:900;color:var(--pur-ll)" id="invNftCount">0</div>
+      <div style="font-size:9px;color:var(--tx2);font-weight:700">NFT Owned</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px">
+    <button class="bbtn bt" style="font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterInv('all',this)">📦 Semua</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterInv('crop',this)">🌾 Panen</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterInv('tool',this)">🔧 Tools</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterInv('nft',this)">💎 NFT</button>
+  </div>
+  <div class="inv-grid" id="invGrid"></div>
+  <div id="invEmpty" class="inv-empty" style="display:none">
+    <div style="font-size:44px;margin-bottom:10px">🎒</div>
+    <h3 style="font-size:15px;font-weight:800;margin-bottom:6px">Tas Kosong</h3>
+    <p style="font-size:11px">Mulai tanam dan panen untuk mengisi tas kamu!</p>
+  </div>
+  <!-- Inventory action bar — shown when item selected -->
+  <div id="invActions" style="display:none;margin-top:12px">
+    <div class="card" style="border-color:var(--teal)">
+      <div style="font-size:12px;font-weight:800;margin-bottom:8px">Aksi untuk: <span id="invSelName">-</span></div>
+      <div style="display:flex;gap:6px">
+        <button class="pbtn teal" style="flex:1;padding:9px;font-size:12px" onclick="listInventoryItem()">🏷️ Jual di Market</button>
+        <button class="pbtn" style="flex:1;padding:9px;font-size:12px;background:var(--s3);color:var(--tx2)" onclick="useInventoryItem()">⚡ Gunakan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SHOP PAGE ═══ -->
+<div class="page" id="pg-shop">
+  <div style="display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;margin-bottom:11px;padding-bottom:3px">
+    <button class="bbtn bt" style="font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterShop('all',this)">🛒 Semua</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterShop('seed',this)">🌱 Benih</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterShop('tool',this)">🔧 Tools</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterShop('land',this)">🌍 Lahan</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterShop('bundle',this)">🎁 Bundle</button>
+  </div>
+  <div id="shopGrid" style="display:flex;flex-direction:column;gap:7px"></div>
+</div>
+
+<!-- ═══ MARKET PAGE ═══ -->
+<div class="page" id="pg-mkt">
+  <div class="g4" style="margin-bottom:12px">
+    <div class="card stc text-center" style="text-align:center;grid-column:span 2"><div class="val" style="font-size:13px" id="mktVol">0</div><div class="lbl">Vol (FVT)</div></div>
+    <div class="card stc text-center" style="text-align:center"><div class="val" id="mktList">0</div><div class="lbl">Listing</div></div>
+    <div class="card stc text-center" style="text-align:center"><div class="val" id="mktTrades">0</div><div class="lbl">Trades</div></div>
+  </div>
+  <div style="display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;scrollbar-width:none">
+    <button class="bbtn bt" style="font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterMkt('all',this)">📦 Semua</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterMkt('crop',this)">🌾 Panen</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterMkt('nft',this)">💎 NFT</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterMkt('mine',this)">👤 Milikku</button>
+    <button class="bbtn" style="background:var(--s3);color:var(--tx2);font-size:10px;padding:6px 13px;flex-shrink:0" onclick="filterMkt('history',this)">📜 Riwayat</button>
+  </div>
+  <div id="mktListings"></div>
+  <!-- FAB -->
+  <button onclick="openSellModal()" style="position:fixed;bottom:22px;right:22px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#0f766e);border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 18px rgba(13,148,136,.42);z-index:100;transition:transform .15s" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">+</button>
+</div>
+
+<!-- ═══ NFT PAGE ═══ -->
+<div class="page" id="pg-nft">
+  <div style="display:flex;gap:6px;margin-bottom:12px">
+    <button class="bbtn bt" style="flex:1;font-size:10px" onclick="nftTab('col',this)">🎨 Koleksi</button>
+    <button class="bbtn" style="flex:1;background:var(--s3);color:var(--tx2);font-size:10px" onclick="nftTab('mint',this)">⚗️ Mint</button>
+    <button class="bbtn" style="flex:1;background:var(--s3);color:var(--tx2);font-size:10px" onclick="nftTab('owned',this)">👜 Milik</button>
+    <button class="bbtn" style="flex:1;background:var(--s3);color:var(--tx2);font-size:10px" onclick="nftTab('stake',this)">📌 Stake</button>
+  </div>
+  <div id="nft-col"><div class="nft-grid" id="nftColGrid"></div></div>
+  <div id="nft-mint" style="display:none">
+    <div class="card info-table" style="margin-bottom:11px">
+      <div class="ir"><span>Gas Estimate</span><span>~0.001 BNB</span></div>
+      <div class="ir"><span>Network</span><span>BNB Chain</span></div>
+      <div class="ir"><span>Standard</span><span>BEP-721</span></div>
+      <div class="ir"><span>Royalty Dev</span><span>5%</span></div>
+    </div>
+    <div class="nft-grid" id="nftMintGrid"></div>
+  </div>
+  <div id="nft-owned" style="display:none"><div class="nft-grid" id="nftOwnedGrid"></div></div>
+  <div id="nft-stake" style="display:none">
+    <div class="card" style="margin-bottom:11px;text-align:center;border-color:rgba(26,108,245,.35)">
+      <div style="font-size:11px;color:#93c5fd;font-weight:700">Total FVT dari Staking</div>
+      <div style="font-size:24px;font-weight:900;color:#4ade80;margin:6px 0" id="stakeTotal">0 FVT</div>
+      <div style="font-size:10px;color:var(--tx2)">APY: 1–5% tergantung rarity NFT</div>
+    </div>
+    <div id="stakeGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ WALLET PAGE ═══ -->
+<div class="page" id="pg-wal">
+  <div id="walDiscon">
+    <div style="text-align:center;padding:26px 16px 16px">
+      <div style="font-size:54px;margin-bottom:12px">💼</div>
+      <h2 style="font-size:19px;font-weight:900;margin-bottom:5px">Hubungkan Wallet</h2>
+      <p style="font-size:11px;color:var(--tx2);margin-bottom:18px;line-height:1.6">Connect MetaMask atau wallet Web3 untuk withdraw FVT, beli NFT, dan kelola aset on-chain kamu.</p>
+      <button class="pbtn pur" onclick="connectWallet()">🦊 Connect MetaMask</button>
+      <div style="margin:10px 0;font-size:10px;color:var(--tx3)">— atau —</div>
+      <button class="pbtn" style="background:var(--s3);color:var(--tx2)" onclick="connectWalletWC()">🔗 WalletConnect</button>
+    </div>
+    <div class="card info-table" style="margin-top:8px">
+      <div style="font-size:12px;font-weight:800;margin-bottom:8px">🔗 Network Didukung</div>
+      <div class="badge-row">
+        <span class="badge" style="background:rgba(240,185,11,.1);color:#f0b90b;border:1px solid rgba(240,185,11,.28)">🟡 BNB Chain</span>
+        <span class="badge" style="background:rgba(98,126,234,.1);color:#627eea;border:1px solid rgba(98,126,234,.28)">🔵 Ethereum</span>
+        <span class="badge" style="background:rgba(130,71,229,.1);color:#8247e5;border:1px solid rgba(130,71,229,.28)">🟣 Polygon</span>
+      </div>
+    </div>
+  </div>
+  <div id="walCon" style="display:none">
+    <div class="walcard">
+      <div class="wal-lbl">💼 Wallet Terhubung</div>
+      <div class="wal-addr" id="walAddr" onclick="copyAddr()">0x...loading</div>
+      <div class="wal-bal"><span id="walBnb">0.000</span> <span style="font-size:14px;color:var(--pur-ll)">BNB</span></div>
+      <div class="wal-sub">≈ $<span id="walUSD">0.00</span> · <span id="walFvt">0</span> FVT · <span id="walNftCount">0</span> NFT</div>
+      <div class="wal-net">🟡 BNB Chain (BSC Mainnet)</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px">
+      <div class="card" style="text-align:center;padding:11px 6px;cursor:pointer" onclick="openModal('mdTopup')">
+        <div style="font-size:20px;margin-bottom:4px">📥</div>
+        <div style="font-size:10px;font-weight:700;color:var(--tx2)">Topup</div>
+      </div>
+      <div class="card" style="text-align:center;padding:11px 6px;cursor:pointer" onclick="openModal('mdWithdraw')">
+        <div style="font-size:20px;margin-bottom:4px">📤</div>
+        <div style="font-size:10px;font-weight:700;color:var(--tx2)">Withdraw</div>
+      </div>
+      <div class="card" style="text-align:center;padding:11px 6px;cursor:pointer" onclick="openModal('mdSend')">
+        <div style="font-size:20px;margin-bottom:4px">➡️</div>
+        <div style="font-size:10px;font-weight:700;color:var(--tx2)">Kirim</div>
+      </div>
+      <div class="card" style="text-align:center;padding:11px 6px;cursor:pointer" onclick="openModal('mdSwap')">
+        <div style="font-size:20px;margin-bottom:4px">🔄</div>
+        <div style="font-size:10px;font-weight:700;color:var(--tx2)">Swap</div>
+      </div>
+    </div>
+    <div class="sec">📜 Riwayat Transaksi</div>
+    <div id="txList"></div>
+    <button class="cbtn" style="margin-top:8px;color:var(--red-l);border-color:rgba(239,68,68,.3)" onclick="disconnectWallet()">🔌 Disconnect Wallet</button>
+  </div>
+</div>
+
+<!-- ═══ LEADERBOARD PAGE ═══ -->
+<div class="page" id="pg-lb">
+  <div class="card" style="display:flex;align-items:center;gap:10px;margin-bottom:11px;border-color:rgba(77,175,74,.35)">
+    <div style="font-size:24px">👨‍🌾</div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:800">Ranking Kamu</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:1px">Panen lebih banyak untuk naik!</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:17px;font-weight:900;color:var(--gold)" id="myRank">#–</div>
+      <div style="font-size:9px;color:var(--tx2)" id="myRankSub">0 FVT</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:5px;margin-bottom:10px">
+    <button class="bbtn bt" style="flex:1;font-size:10px" onclick="showLB('harvest',this)">🌾 Panen</button>
+    <button class="bbtn" style="flex:1;background:var(--s3);color:var(--tx2);font-size:10px" onclick="showLB('fvt',this)">💰 FVT</button>
+    <button class="bbtn" style="flex:1;background:var(--s3);color:var(--tx2);font-size:10px" onclick="showLB('level',this)">⭐ Level</button>
+    <button class="bbtn" style="flex:1;background:var(--s3);color:var(--tx2);font-size:10px" onclick="showLB('nft',this)">💎 NFT</button>
+  </div>
+  <div id="lbList"></div>
+</div>
+
+<!-- ══════════════ MODALS ══════════════ -->
+<!-- Plant Modal -->
+<div class="overlay" id="mdPlant">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>🌱 Pilih Tanaman</h2>
+    <div class="msub">Lahan #<span id="mdPlotNum">1</span> · 🪙<span id="mdGold">0</span> 💎<span id="mdGems">0</span></div>
+    <div class="copts" id="cropOpts"></div>
+    <button class="pbtn" onclick="plantCrop()">🌱 Tanam Sekarang!</button>
+    <button class="cbtn" onclick="closeModal('mdPlant')">Batal</button>
+  </div>
+</div>
+
+<!-- Quest Modal -->
+<div class="overlay" id="mdQuest">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>📋 Misi Harian</h2>
+    <div class="msub">Streak: <span id="mdStreak">0</span> hari · Reset 00:00 WIB</div>
+    <div id="checkinGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px"></div>
+    <div id="questList"></div>
+    <button class="cbtn" onclick="closeModal('mdQuest')">Tutup</button>
+  </div>
+</div>
+
+<!-- Referral Modal -->
+<div class="overlay" id="mdRef">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>🔗 Referral</h2>
+    <div class="msub">Ajak teman, dapat FVT bersama!</div>
+    <div class="card" style="margin-bottom:10px;word-break:break-all;font-family:monospace;font-size:11px;color:var(--pur-ll)" id="refLink">Memuat...</div>
+    <div class="card info-table">
+      <div class="ir"><span>Bonus untuk kamu</span><span>+200 FVT</span></div>
+      <div class="ir"><span>Bonus untuk teman</span><span>+100 FVT</span></div>
+      <div class="ir"><span>Total referral kamu</span><span id="refCount">0</span></div>
+    </div>
+    <button class="pbtn teal" style="margin-top:10px" onclick="shareRef()">📤 Bagikan Link</button>
+    <button class="cbtn" onclick="closeModal('mdRef')">Tutup</button>
+  </div>
+</div>
+
+<!-- Sell Modal -->
+<div class="overlay" id="mdSell">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>🏷️ Jual di Market</h2>
+    <div class="msub">Item akan dikurangi dari inventory kamu</div>
+    <div class="field">
+      <label>Pilih Item dari Inventory</label>
+      <div id="sellItemPicker" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:160px;overflow-y:auto"></div>
+    </div>
+    <div class="field">
+      <label>Jumlah</label>
+      <input type="number" class="finput" id="sellQty" min="1" value="1" oninput="updateSellFee()">
+    </div>
+    <div class="field">
+      <label>Harga (FVT per unit)</label>
+      <input type="number" class="finput" id="sellPrice" placeholder="Min. 10 FVT" min="10" oninput="updateSellFee()">
+    </div>
+    <div class="finfo" id="sellFeeBox">Pilih item dan masukkan harga.</div>
+    <button class="pbtn teal" onclick="confirmSell()">✅ Listing Sekarang</button>
+    <button class="cbtn" onclick="closeModal('mdSell')">Batal</button>
+  </div>
+</div>
+
+<!-- Topup Modal -->
+<div class="overlay" id="mdTopup">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>📥 Topup FVT</h2>
+    <div class="msub">Beli FVT Token untuk bermain & trading</div>
+    <div class="topup-tabs">
+      <button class="topup-tab on" onclick="topupTab('crypto',this)">Crypto</button>
+      <button class="topup-tab" onclick="topupTab('fiat',this)">Rupiah (IDR)</button>
+    </div>
+    <div id="topup-crypto">
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:9px">Pilih metode pembayaran:</div>
+      <div class="crypto-grid">
+        <div class="cryp-btn sel" onclick="selTopup('bnb',this)"><div class="ce">🟡</div><div class="cs">BNB</div><div class="cp">BNB Chain</div></div>
+        <div class="cryp-btn" onclick="selTopup('eth',this)"><div class="ce">🔵</div><div class="cs">ETH</div><div class="cp">Ethereum</div></div>
+        <div class="cryp-btn" onclick="selTopup('usdt',this)"><div class="ce">💚</div><div class="cs">USDT</div><div class="cp">BSC/ETH</div></div>
+      </div>
+      <div class="finfo">
+        📋 <strong>Alamat Deposit:</strong><br>
+        <span style="font-family:monospace;font-size:10px;color:var(--pur-ll)" id="topupAddr">Connect wallet dulu</span><br><br>
+        Min deposit: 0.01 BNB / $10 USDT<br>
+        Konfirmasi: 12 block (~36 detik)
+      </div>
+    </div>
+    <div id="topup-fiat" style="display:none">
+      <div class="finfo">
+        💳 <strong>Metode Pembayaran IDR:</strong><br>
+        QRIS · Transfer Bank · OVO · GoPay · Dana<br><br>
+        Rate: <strong>1 FVT = Rp 800</strong><br>
+        Min: Rp 50.000 · Max: Rp 5.000.000
+      </div>
+      <div class="field">
+        <label>Jumlah IDR</label>
+        <input type="number" class="finput" id="topupIDR" placeholder="Contoh: 100000" oninput="calcTopupIDR()">
+      </div>
+      <div class="finfo" id="topupIDRResult">Masukkan jumlah.</div>
+    </div>
+    <button class="pbtn blue" onclick="processTopup()">📥 Lanjutkan Topup</button>
+    <button class="cbtn" onclick="closeModal('mdTopup')">Batal</button>
+  </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div class="overlay" id="mdWithdraw">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>📤 Withdraw FVT</h2>
+    <div class="msub">Tarik FVT ke wallet eksternal kamu</div>
+    <div class="field">
+      <label>Alamat Wallet Tujuan</label>
+      <input type="text" class="finput" id="wdAddr" placeholder="0x..." style="font-family:monospace;font-size:11px">
+    </div>
+    <div class="field">
+      <label>Jumlah FVT</label>
+      <input type="number" class="finput" id="wdAmt" placeholder="Min. 100 FVT" min="100" oninput="calcWithdraw()">
+    </div>
+    <div class="finfo" id="wdFeeBox">Masukkan jumlah untuk melihat estimasi.</div>
+    <div class="finfo warn" id="wdWarn" style="display:none">⚠️ Pastikan alamat benar! Transaksi tidak bisa dibatalkan.</div>
+    <button class="pbtn teal" onclick="confirmWithdraw()">📤 Withdraw Sekarang</button>
+    <button class="cbtn" onclick="closeModal('mdWithdraw')">Batal</button>
+  </div>
+</div>
+
+<!-- Send Modal -->
+<div class="overlay" id="mdSend">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>➡️ Kirim FVT</h2>
+    <div class="msub">Transfer FVT ke pengguna lain</div>
+    <div class="field">
+      <label>Username atau ID Telegram</label>
+      <input type="text" class="finput" id="sendTo" placeholder="@username atau user_id">
+    </div>
+    <div class="field">
+      <label>Jumlah FVT</label>
+      <input type="number" class="finput" id="sendAmt" placeholder="Min. 1 FVT" min="1">
+    </div>
+    <div class="finfo">Biaya gas: 0 FVT (transfer internal)</div>
+    <button class="pbtn teal" onclick="confirmSend()">➡️ Kirim</button>
+    <button class="cbtn" onclick="closeModal('mdSend')">Batal</button>
+  </div>
+</div>
+
+<!-- Swap Modal -->
+<div class="overlay" id="mdSwap">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>🔄 Swap Token</h2>
+    <div class="msub">Tukar BNB ⟷ FVT ⟷ USDT</div>
+    <div class="field">
+      <label>Dari</label>
+      <div style="display:flex;gap:8px">
+        <select class="finput" id="swapFrom" style="flex:1" onchange="calcSwap()">
+          <option value="bnb">BNB</option>
+          <option value="fvt">FVT</option>
+          <option value="usdt">USDT</option>
+        </select>
+        <input type="number" class="finput" id="swapAmt" placeholder="0.00" style="flex:2" oninput="calcSwap()">
+      </div>
+    </div>
+    <div style="text-align:center;font-size:18px;margin:4px 0">⇅</div>
+    <div class="field">
+      <label>Ke</label>
+      <div style="display:flex;gap:8px">
+        <select class="finput" id="swapTo" style="flex:1" onchange="calcSwap()">
+          <option value="fvt">FVT</option>
+          <option value="bnb">BNB</option>
+          <option value="usdt">USDT</option>
+        </select>
+        <div class="finput" id="swapResult" style="flex:2;background:var(--s3);display:flex;align-items:center">0.00</div>
+      </div>
+    </div>
+    <div class="finfo" id="swapInfo">Masukkan jumlah.</div>
+    <button class="pbtn teal" onclick="confirmSwap()">🔄 Swap Sekarang</button>
+    <button class="cbtn" onclick="closeModal('mdSwap')">Batal</button>
+  </div>
+</div>
+
+<!-- Tournament Modal -->
+<div class="overlay" id="mdTournament">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>🏆 Turnamen Mingguan</h2>
+    <div class="msub">Kompetisi berakhir Minggu 23:59 WIB</div>
+    <div class="card" style="text-align:center;margin-bottom:11px;border-color:rgba(245,166,35,.4)">
+      <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px">PRIZE POOL MINGGU INI</div>
+      <div style="font-size:26px;font-weight:900;color:#4ade80">50,000 FVT</div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:4px">≈ $2,500 USD</div>
+    </div>
+    <div class="card info-table">
+      <div class="ir"><span>🥇 Rank #1</span><span>15,000 FVT</span></div>
+      <div class="ir"><span>🥈 Rank #2</span><span>8,000 FVT</span></div>
+      <div class="ir"><span>🥉 Rank #3</span><span>5,000 FVT</span></div>
+      <div class="ir"><span>🏅 Rank #4-10</span><span>500–2,000 FVT</span></div>
+    </div>
+    <button class="pbtn gold" style="margin-top:11px" onclick="closeModal('mdTournament');switchTab('farm')">🌾 Main Sekarang!</button>
+    <button class="cbtn" onclick="closeModal('mdTournament')">Tutup</button>
+  </div>
+</div>
+
+<!-- NFT Detail Modal -->
+<div class="overlay" id="mdNft">
+  <div class="modal"><div id="mdNftContent"></div><button class="cbtn" onclick="closeModal('mdNft')">Tutup</button></div>
+</div>
+
+<!-- Inventory Sell Quick Modal -->
+<div class="overlay" id="mdInvSell">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <h2>🏷️ Jual Item</h2>
+    <div class="msub" id="mdInvSellSub">Item dari inventory</div>
+    <div class="field">
+      <label>Jumlah (Max: <span id="mdInvMax">0</span>)</label>
+      <input type="number" class="finput" id="mdInvQty" min="1" value="1" oninput="updateInvSellFee()">
+    </div>
+    <div class="field">
+      <label>Harga FVT per unit</label>
+      <input type="number" class="finput" id="mdInvPrice" placeholder="Min 10 FVT" min="10" oninput="updateInvSellFee()">
+    </div>
+    <div class="finfo" id="mdInvFee">Masukkan harga.</div>
+    <button class="pbtn teal" onclick="doInvSell()">✅ Listing</button>
+    <button class="cbtn" onclick="closeModal('mdInvSell')">Batal</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ANTI-CHEAT ENGINE
+// ═══════════════════════════════════════════════════════════
+const AC = {
+  score: 0,
+  harvestLog: [],
+  plantLog: [],
+  _lastPerf: 0, _lastDate: 0,
+  init() {
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (e.key==='F12'||(e.ctrlKey&&e.shiftKey&&'IJC'.includes(e.key))||(e.ctrlKey&&e.key==='U')) {
+        e.preventDefault(); this.score += 3;
+      }
+    });
+    setInterval(() => this._detectDevtools(), 4000);
+    setInterval(() => this._detectTimeTamper(), 2500);
+  },
+  _detectDevtools() {
+    if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
+      this.score += 5;
+      if (this.score >= 40) this.flag('DEVTOOLS','DevTools detected');
+    }
+  },
+  _detectTimeTamper() {
+    const p = performance.now(), d = Date.now();
+    if (this._lastPerf && Math.abs((p - this._lastPerf) - (d - this._lastDate)) > 4000) {
+      this.flag('TIME_TAMPER',`drift perf=${p-this._lastPerf} date=${d-this._lastDate}`);
+    }
+    this._lastPerf = p; this._lastDate = d;
+  },
+  checkHarvest(slot, plantedAt, growTime) {
+    const now = Date.now();
+    this.harvestLog = this.harvestLog.filter(e => now - e.t < 60000);
+    if (this.harvestLog.length >= 20) { this.flag('HARVEST_SPAM','rate exceeded'); return false; }
+    const elapsed = (now - plantedAt) / 1000;
+    if (elapsed < growTime - 3) { this.flag('TIME_HACK',`slot${slot} elapsed=${elapsed.toFixed(1)} < grow=${growTime}`); return false; }
+    this.harvestLog.push({slot, t: now}); return true;
+  },
+  checkPlant() {
+    const now = Date.now();
+    this.plantLog = this.plantLog.filter(e => now - e.t < 8000);
+    if (this.plantLog.length >= 4) { this.flag('PLANT_SPAM','too many plants/8s'); return false; }
+    this.plantLog.push({t: now}); return true;
+  },
+  flag(code, reason) {
+    this.score += 15;
+    console.warn('[AC]', code, reason);
+    sendWA('anti_cheat_flag', {code, reason});
+    if (this.score >= 60) this.ban(code);
+  },
+  ban(code) {
+    document.getElementById('bancode').textContent = code;
+    document.getElementById('banscreen').classList.add('on');
+    G.banned = true;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════════
+const G = {
+  userId: 0, name: 'Farmer', banned: false,
+  gold: 500, gems: 20, fvt: 0,
+  level: 1, xp: 0, xpMax: 1000,
+  totalHarvest: 0, streak: 0,
+  boostMult: 1, boostUntil: 0,
+  walletAddr: '', walletBal: 0, walletConnected: false,
+  ownedNFTs: [],
+  // Inventory: {itemId: {emoji, name, qty, type, fvtValue}}
+  inventory: {},
+  // Market listings (from server, mirrored locally)
+  listings: [],
+  marketVol: 0, marketTrades: 0,
+  // Plots: array of 16
+  plots: Array.from({length:16}, (_,i) => ({
+    slot:i, locked: i>=8, crop:null, plantedAt:0, growTime:0,
+    reward:0, xpReward:0, nonce:null, emoji:null
+  })),
+  txHistory: [],
+  p2eStats: { fromFarm:0, fromTrade:0, fromRef:0, withdrawn:0 },
+  questProgress: { harvest:0, plant:0 },
+  questDone: false,
+  selCrop: null,
+  activePlot: null,
+  selInvItem: null,
+  fvtRate: 0.05, // $ per FVT
+};
+
+// ═══════════════════════════════════════════════════════════
+// CROP & NFT DATA
+// ═══════════════════════════════════════════════════════════
+const CROPS = {
+  wheat:        {cost:10,  type:'gold', grow:120,  reward:50,  xp:10,  fvtReward:5,   emoji:'🌾', name:'Gandum',        minLevel:1},
+  carrot:       {cost:25,  type:'gold', grow:300,  reward:120, xp:20,  fvtReward:12,  emoji:'🥕', name:'Wortel',         minLevel:1},
+  corn:         {cost:50,  type:'gold', grow:180,  reward:200, xp:30,  fvtReward:20,  emoji:'🌽', name:'Jagung',         minLevel:2},
+  tomato:       {cost:40,  type:'gold', grow:240,  reward:160, xp:25,  fvtReward:16,  emoji:'🍅', name:'Tomat',          minLevel:2},
+  pumpkin:      {cost:70,  type:'gold', grow:360,  reward:280, xp:40,  fvtReward:28,  emoji:'🎃', name:'Labu',           minLevel:3},
+  sunflower:    {cost:100, type:'gold', grow:480,  reward:380, xp:55,  fvtReward:38,  emoji:'🌻', name:'Bunga Matahari', minLevel:4},
+  mango:        {cost:130, type:'gold', grow:600,  reward:520, xp:70,  fvtReward:52,  emoji:'🥭', name:'Mangga',         minLevel:5},
+  grape:        {cost:200, type:'gold', grow:900,  reward:850, xp:100, fvtReward:85,  emoji:'🍇', name:'Anggur',         minLevel:6},
+  strawberry:   {cost:15,  type:'gems', grow:180,  reward:400, xp:60,  fvtReward:80,  emoji:'🍓', name:'Stroberi',       minLevel:3, premium:true},
+  blueberry:    {cost:25,  type:'gems', grow:240,  reward:600, xp:80,  fvtReward:120, emoji:'🫐', name:'Blueberry',      minLevel:4, premium:true},
+  diamond_apple:{cost:30,  type:'gems', grow:120,  reward:300, xp:50,  fvtReward:60,  emoji:'💎', name:'Diamond Apple',  minLevel:2, premium:true},
+};
+
+const SHOP_ITEMS = [
+  {id:'wheat_s',   cat:'seed',   emoji:'🌾', name:'Benih Gandum',        desc:'2m · +50🪙 +5 FVT',       price:10,    cur:'gold', badge:'basic'},
+  {id:'carrot_s',  cat:'seed',   emoji:'🥕', name:'Benih Wortel',         desc:'5m · +120🪙 +12 FVT',      price:25,    cur:'gold', badge:'basic'},
+  {id:'corn_s',    cat:'seed',   emoji:'🌽', name:'Benih Jagung',          desc:'3m · +200🪙 +20 FVT · Lv2',price:50,    cur:'gold', badge:'p2w'},
+  {id:'pumpkin_s', cat:'seed',   emoji:'🎃', name:'Benih Labu',            desc:'6m · +280🪙 +28 FVT · Lv3',price:70,    cur:'gold', badge:'p2w'},
+  {id:'straw_s',   cat:'seed',   emoji:'🍓', name:'Benih Stroberi',        desc:'3m · +400🪙 +80 FVT · Premium',price:15, cur:'gems', badge:'nft'},
+  {id:'blue_s',    cat:'seed',   emoji:'🫐', name:'Benih Blueberry',       desc:'4m · +600🪙 +120 FVT · Premium',price:25,cur:'gems', badge:'nft'},
+  {id:'fert_i',    cat:'tool',   emoji:'⚡', name:'Pupuk Instan',          desc:'Percepat 50% semua lahan', price:50,    cur:'gold', badge:'hot'},
+  {id:'fert_s',    cat:'tool',   emoji:'🧪', name:'Super Fertilizer',      desc:'Selesaikan 1 lahan instan',price:20,    cur:'gems', badge:'hot'},
+  {id:'plot_u',    cat:'land',   emoji:'🌍', name:'Buka Lahan Baru',        desc:'Slot +1 permanent (on-chain)',price:'0.01',cur:'bnb', badge:'p2e'},
+  {id:'mega_l',    cat:'land',   emoji:'🏞️', name:'Mega Land Pack',        desc:'Buka 4 lahan + tanah subur',price:'0.035',cur:'bnb', badge:'p2e'},
+  {id:'start_b',   cat:'bundle', emoji:'🎁', name:'Starter Bundle',         desc:'1500🪙 +50💎 +500 FVT',    price:'0.005',cur:'bnb', badge:'p2w'},
+  {id:'prem_b',    cat:'bundle', emoji:'🚀', name:'Premium Bundle 🔥',      desc:'2x 24jam +5000🪙 +500💎 +2000 FVT',price:'0.02',cur:'bnb',badge:'p2w'},
+  {id:'vip_b',     cat:'bundle', emoji:'👑', name:'VIP Pass Selamanya',     desc:'3x semua + NFT gratis + 10000 FVT',price:'0.1', cur:'bnb',badge:'p2e'},
+];
+
+const NFTS = [
+  {id:'royal_farmer',    emoji:'👑', name:'Royal Farmer',       bonus:'+100% XP & FVT',    price:'0.08', rarity:'legendary', apy:5.0},
+  {id:'auto_harvester',  emoji:'🤖', name:'Auto Harvester',     bonus:'Auto-panen 30m',    price:'0.05', rarity:'epic',      apy:3.0},
+  {id:'alchemist_lab',   emoji:'🧪', name:'Alchemist Lab',      bonus:'Buat potion 3x',    price:'0.12', rarity:'legendary', apy:4.5},
+  {id:'grand_castle',    emoji:'🏰', name:'Grand Castle',       bonus:'+5 slot eksklusif', price:'0.25', rarity:'legendary', apy:5.0},
+  {id:'unicorn_mount',   emoji:'🦄', name:'Unicorn Mount',      bonus:'3x speed +XP',      price:'0.15', rarity:'epic',      apy:3.5},
+  {id:'rare_soil',       emoji:'⚗️', name:'Rare Soil Pack',     bonus:'Tanaman 2x lebih cepat',price:'0.06', rarity:'rare', apy:1.5},
+  {id:'golden_tractor',  emoji:'🚜', name:'Golden Tractor',     bonus:'4 plot serentak',   price:'0.18', rarity:'epic',      apy:3.0},
+  {id:'crystal_gh',      emoji:'🌿', name:'Crystal Greenhouse', bonus:'Premium crop gratis',price:'0.10', rarity:'rare',     apy:2.0},
+];
+
+const LB_MOCK = [
+  {rank:1, name:'CryptoFarmer99', emoji:'🧑‍🌾', harvest:48520, level:42, nft:7, fvt:92000},
+  {rank:2, name:'BlockchainKing', emoji:'👨‍💼', harvest:41200, level:38, nft:5, fvt:78500},
+  {rank:3, name:'NFTHarvester',   emoji:'👩‍🌾', harvest:38750, level:35, nft:4, fvt:65200},
+  {rank:4, name:'DeFiGardener',   emoji:'🧙',   harvest:31400, level:30, nft:3, fvt:52000},
+  {rank:5, name:'Web3Planter',    emoji:'🤖',   harvest:27860, level:27, nft:2, fvt:43000},
+  {rank:6, name:'TokenFarmer',    emoji:'🦸',   harvest:19320, level:22, nft:3, fvt:31000},
+  {rank:7, name:'SmartFarm2025',  emoji:'🐲',   harvest:7200,  level:14, nft:1, fvt:12000},
+  {rank:8, name:'PixelHarvest',   emoji:'🌻',   harvest:5400,  level:11, nft:0, fvt:8800},
+  {rank:9, name:'CryptoSoil',     emoji:'🌱',   harvest:3800,  level:9,  nft:1, fvt:5600},
+];
+
+const MKT_MOCK = [
+  {id:'m1', emoji:'🌾', name:'Gandum x50',      seller:'CryptoFarmer99', price:850,  type:'crop', mine:false},
+  {id:'m2', emoji:'🤖', name:'Auto Harvester NFT',seller:'BlockchainKing', price:18500,type:'nft', mine:false},
+  {id:'m3', emoji:'🍓', name:'Stroberi x20',     seller:'DeFiGardener',  price:2400, type:'crop', mine:false},
+  {id:'m4', emoji:'⚗️', name:'Rare Soil NFT',    seller:'NFTHarvester',  price:9800, type:'nft',  mine:false},
+  {id:'m5', emoji:'🥕', name:'Wortel x30',       seller:'Web3Planter',   price:620,  type:'crop', mine:false},
+];
+
+const TIPS = [
+  'Tip: Panen tepat waktu untuk FVT maksimal!',
+  'Tip: NFT Auto Harvester bisa panen otomatis!',
+  'Tip: Connect wallet untuk withdraw FVT ke kripto nyata',
+  'Tip: Ajak teman dapat +200 FVT per referral!',
+  'Tip: Selesaikan misi harian untuk bonus FVT gratis',
+  'Tip: Anggur menghasilkan 85 FVT per panen!',
+];
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  AC.init();
+  document.getElementById('ldtip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+
+  // Telegram WebApp init
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.ready(); tg.expand();
+    tg.setHeaderColor('#0e180e');
+    const u = tg.initDataUnsafe?.user;
+    if (u) { G.userId = u.id; G.name = u.first_name + (u.last_name ? ' '+u.last_name : ''); }
+  }
+
+  // Demo plots
+  const now = Date.now();
+  G.plots[0] = {...G.plots[0], crop:'wheat',   emoji:'🌾', plantedAt:now-110000, growTime:120, reward:50,  xpReward:10, fvtReward:5,  nonce:'demo1'};
+  G.plots[1] = {...G.plots[1], crop:'carrot',  emoji:'🥕', plantedAt:now-250000, growTime:300, reward:120, xpReward:20, fvtReward:12, nonce:'demo2'};
+  G.plots[2] = {...G.plots[2], crop:'corn',    emoji:'🌽', plantedAt:now-80000,  growTime:180, reward:200, xpReward:30, fvtReward:20, nonce:'demo3'};
+  G.plots[3] = {...G.plots[3], crop:'tomato',  emoji:'🍅', plantedAt:now-200000, growTime:240, reward:160, xpReward:25, fvtReward:16, nonce:'demo4'};
+  // Demo inventory
+  addInv('wheat',    CROPS.wheat.emoji,    CROPS.wheat.name,    'crop', 12,  50);
+  addInv('carrot',   CROPS.carrot.emoji,   CROPS.carrot.name,   'crop', 8,   120);
+  addInv('corn',     CROPS.corn.emoji,     CROPS.corn.name,     'crop', 5,   200);
+  addInv('fert_i',   '⚡', 'Pupuk Instan', 'tool', 2, 0);
+  G.fvt = 1250;
+  G.marketVol = 142850; G.marketTrades = 87;
+
+  renderAll();
+  requestAnimationFrame(() => {
+    setTimeout(() => { document.getElementById('loading').classList.add('out'); }, 2500);
+  });
+
+  setInterval(tickPlots, 1000);
+  setInterval(tickBoost, 1000);
+
+  // Listen for state sync from backend
+  window.addEventListener('message', e => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'STATE_SYNC') applyStateSync(msg);
+      else if (msg.type === 'HARVEST_RESULT') applyHarvestResult(msg);
+      else if (msg.type === 'PLOT_UPDATE') applyPlotUpdate(msg);
+    } catch (_) {}
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// INVENTORY HELPERS
+// ═══════════════════════════════════════════════════════════
+function addInv(id, emoji, name, type, qty, fvtValue) {
+  if (!G.inventory[id]) G.inventory[id] = {emoji, name, type, qty:0, fvtValue};
+  G.inventory[id].qty += qty;
+}
+function takeInv(id, qty) {
+  if (!G.inventory[id] || G.inventory[id].qty < qty) return false;
+  G.inventory[id].qty -= qty;
+  if (G.inventory[id].qty === 0) delete G.inventory[id];
+  return true;
+}
+function invList(filter) {
+  return Object.entries(G.inventory)
+    .filter(([_, v]) => !filter || filter === 'all' || v.type === filter)
+    .map(([k, v]) => ({id:k, ...v}));
+}
+function invTotalFvt() {
+  return Object.values(G.inventory).reduce((s, v) => s + v.qty * v.fvtValue, 0);
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+function renderAll() {
+  renderHUD();
+  renderPlots();
+  renderShop('all');
+  renderMarket('all');
+  renderNFTGrid('col');
+  renderLeaderboard('harvest');
+  renderInventory('all');
+  updateQuestBar();
+  updateP2E();
+}
+
+function renderHUD() {
+  document.getElementById('hGold').textContent = G.gold.toLocaleString('id');
+  document.getElementById('hGems').textContent = G.gems;
+  document.getElementById('hLv').textContent = G.level;
+  document.getElementById('pName').textContent = G.name;
+  document.getElementById('pLv').textContent = G.level;
+  document.getElementById('pXp').textContent = G.xp;
+  document.getElementById('pXpMax').textContent = G.xpMax;
+  document.getElementById('xpfill').style.width = Math.round(G.xp / G.xpMax * 100) + '%';
+  document.getElementById('sHarvest').textContent = G.totalHarvest.toLocaleString('id');
+  document.getElementById('sStreak').textContent = G.streak + '🔥';
+  const active = G.plots.filter(p => p.crop && !p.locked).length;
+  document.getElementById('sActive').textContent = active;
+  const rate = G.plots.filter(p => p.crop && !p.locked)
+    .reduce((s, p) => s + ((CROPS[p.crop]?.fvtReward || 0) / ((p.growTime || 1) / 3600)), 0);
+  document.getElementById('sEarn').textContent = '+' + Math.floor(rate);
+}
+
+function renderPlots() {
+  const grid = document.getElementById('plotGrid');
+  grid.innerHTML = '';
+  G.plots.forEach((plot, i) => {
+    const el = document.createElement('div');
+    el.className = 'plot';
+    el.id = 'pt'+i;
+    if (plot.locked) {
+      el.classList.add('locked');
+      const cost = (i - 7) * 200;
+      el.innerHTML = `<div class="plock">🔒</div><div class="plockp">${cost}🪙</div>`;
+      el.onclick = () => unlockPlot(i, cost);
+    } else if (!plot.crop) {
+      el.innerHTML = `<div style="font-size:20px;opacity:.3">➕</div>`;
+      el.onclick = () => openPlantModal(i);
+    } else {
+      const elapsed = (Date.now() - plot.plantedAt) / 1000;
+      const pct = Math.min(elapsed / plot.growTime, 1);
+      const ready = pct >= 1;
+      el.classList.add(ready ? 'ready' : 'growing');
+      const rem = ready ? 0 : Math.ceil(plot.growTime - elapsed);
+      el.innerHTML = `
+        <div class="pemoji">${plot.emoji}</div>
+        <div class="ptimer">${ready ? '✅SIAP' : fmtTime(rem)}</div>
+        <div class="pbar"><div class="pbarfill" style="width:${pct*100}%"></div></div>`;
+      el.onclick = ready ? () => harvestPlot(i) : () => toast(`⏳ ${fmtTime(rem)} lagi`);
+    }
+    grid.appendChild(el);
+  });
+  updateHarvestBtn();
+  renderInvPreview();
+}
+
+function tickPlots() {
+  G.plots.forEach((plot, i) => {
+    if (!plot.crop || plot.locked) return;
+    const el = document.getElementById('pt'+i);
+    if (!el) return;
+    const elapsed = (Date.now() - plot.plantedAt) / 1000;
+    const pct = Math.min(elapsed / plot.growTime, 1);
+    const ready = pct >= 1;
+    const fill = el.querySelector('.pbarfill');
+    if (fill) fill.style.width = (pct*100) + '%';
+    const tmr = el.querySelector('.ptimer');
+    if (tmr) {
+      if (ready && !el.classList.contains('ready')) {
+        el.classList.remove('growing'); el.classList.add('ready');
+        tmr.textContent = '✅SIAP';
+        el.onclick = () => harvestPlot(i);
+        updateHarvestBtn();
+      } else if (!ready) tmr.textContent = fmtTime(Math.ceil(plot.growTime - elapsed));
+    }
+  });
+}
+
+function tickBoost() {
+  if (G.boostUntil > 0 && Date.now() > G.boostUntil) {
+    G.boostMult = 1; G.boostUntil = 0;
+    toast('⚡ Boost habis!', 'inf');
+  }
+}
+
+function updateHarvestBtn() {
+  const ready = G.plots.filter(p => p.crop && !p.locked && (Date.now()-p.plantedAt)/1000 >= p.growTime).length;
+  const btn = document.getElementById('hvAllBtn');
+  btn.disabled = ready === 0;
+  btn.innerHTML = ready > 0 ? `🌾 Panen Semua (${ready} siap)` : '⏳ Belum Ada Panen Siap';
+}
+
+function renderInvPreview() {
+  const items = invList('crop').slice(0, 6);
+  const el = document.getElementById('invPreview');
+  if (!items.length) { el.innerHTML = '<div style="font-size:11px;color:var(--tx3);text-align:center">Belum ada panen di inventory</div>'; return; }
+  el.innerHTML = `<div class="inv-grid">` +
+    items.map(it => `<div class="invitem" style="padding:8px 5px">
+      <div class="iemoji">${it.emoji}</div>
+      <div class="iname">${it.name}</div>
+      <div class="iqty">x${it.qty}</div>
+    </div>`).join('') + `</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PLANT & HARVEST
+// ═══════════════════════════════════════════════════════════
+function openPlantModal(idx) {
+  G.activePlot = idx; G.selCrop = null;
+  document.getElementById('mdPlotNum').textContent = idx + 1;
+  document.getElementById('mdGold').textContent = G.gold.toLocaleString('id');
+  document.getElementById('mdGems').textContent = G.gems;
+  const container = document.getElementById('cropOpts');
+  container.innerHTML = '';
+  Object.entries(CROPS).forEach(([id, c]) => {
+    const canAfford = c.type === 'gold' ? G.gold >= c.cost : G.gems >= c.cost;
+    const lvOk = G.level >= c.minLevel;
+    const el = document.createElement('div');
+    el.className = 'copt' + (!canAfford || !lvOk ? ' locked' : '');
+    el.innerHTML = `<div class="ce">${c.emoji}</div><div class="cn">${c.name}</div>
+      <div class="ct">${c.grow>=60?Math.floor(c.grow/60)+'m':c.grow+'s'}</div>
+      <div class="cr">${c.type==='gems'?'💎':'🪙'}${c.cost}</div>
+      ${!lvOk?`<div style="font-size:8px;color:var(--red-l)">Lv.${c.minLevel}</div>`:''}
+      <div style="font-size:8px;color:#4ade80;margin-top:1px">+${c.fvtReward}FVT</div>`;
+    if (c.premium) el.style.borderColor = 'rgba(168,85,247,.4)';
+    if (canAfford && lvOk) el.onclick = () => {
+      document.querySelectorAll('.copt').forEach(x => x.classList.remove('sel'));
+      el.classList.add('sel'); G.selCrop = id;
+    };
+    container.appendChild(el);
+  });
+  openModal('mdPlant');
+}
+
+function plantCrop() {
+  if (!G.selCrop) { toast('⚠️ Pilih tanaman dulu!', 'err'); return; }
+  if (G.banned) return;
+  if (!AC.checkPlant()) { toast('⚠️ Terlalu cepat!', 'err'); return; }
+  const c = CROPS[G.selCrop];
+  if (c.type === 'gold') { if (G.gold < c.cost) { toast('❌ Koin kurang!', 'err'); return; } G.gold -= c.cost; }
+  else { if (G.gems < c.cost) { toast('❌ Gems kurang!', 'err'); return; } G.gems -= c.cost; }
+  const plot = G.plots[G.activePlot];
+  plot.crop = G.selCrop; plot.emoji = c.emoji;
+  plot.plantedAt = Date.now();
+  plot.growTime = c.grow; plot.reward = c.reward;
+  plot.xpReward = c.xp; plot.fvtReward = c.fvtReward;
+  plot.nonce = `${G.userId}_${G.activePlot}_${Date.now()}`;
+  G.questProgress.plant++;
+  closeModal('mdPlant'); renderPlots(); renderHUD(); updateQuestBar();
+  toast(`${c.emoji} ${c.name} ditanam di lahan #${G.activePlot+1}!`, 'suc');
+  sendWA('plant', {plotIdx: G.activePlot, cropId: G.selCrop, nonce: plot.nonce});
+}
+
+function harvestPlot(idx) {
+  if (G.banned) return;
+  const plot = G.plots[idx];
+  if (!plot?.crop) return;
+  if (!AC.checkHarvest(idx, plot.plantedAt, plot.growTime)) { toast('🚫 Terdeteksi kecurangan!', 'err'); return; }
+  const elapsed = (Date.now() - plot.plantedAt) / 1000;
+  if (elapsed < plot.growTime - 3) { toast('❌ Belum siap!', 'err'); return; }
+  const mult = G.boostMult;
+  const gold = Math.floor(plot.reward * mult);
+  const fvt  = Math.floor(plot.fvtReward * mult);
+  const xp   = Math.floor(plot.xpReward * mult);
+  G.gold += gold; G.fvt += fvt;
+  G.totalHarvest++;
+  G.questProgress.harvest++;
+  G.p2eStats.fromFarm += fvt;
+  // Add to inventory
+  addInv(plot.crop, plot.emoji, CROPS[plot.crop]?.name || plot.crop, 'crop', 1, plot.fvtReward);
+  // XP & level
+  G.xp += xp;
+  if (G.xp >= G.xpMax) { G.xp -= G.xpMax; G.level++; G.xpMax = Math.floor(G.xpMax * 1.4); toast(`🎉 Level UP! Kamu sekarang Level ${G.level}!`, 'suc'); G.gems += 10; }
+  const pEl = document.getElementById('pt'+idx);
+  spawnPop(pEl, `+${fvt}FVT`);
+  const harvCrop = plot.crop;
+  // Clear plot
+  plot.crop = null; plot.emoji = null; plot.plantedAt = 0; plot.growTime = 0;
+  plot.reward = 0; plot.xpReward = 0; plot.fvtReward = 0; plot.nonce = null;
+  renderPlots(); renderHUD(); renderInventory(); updateQuestBar(); checkQuestDone();
+  toast(`✅ +${gold}🪙 +${fvt}FVT +${xp}XP`, 'suc');
+  sendWA('harvest', {plotIdx: idx, nonce: G.plots[idx]?.nonce || '', cropId: harvCrop});
+}
+
+function harvestAll() {
+  if (G.banned) return;
+  let count = 0, totalFvt = 0, totalGold = 0;
+  G.plots.forEach((plot, i) => {
+    if (!plot.crop || plot.locked) return;
+    if (!AC.checkHarvest(i, plot.plantedAt, plot.growTime)) return;
+    if ((Date.now() - plot.plantedAt) / 1000 < plot.growTime - 3) return;
+    const mult = G.boostMult;
+    totalGold += Math.floor(plot.reward * mult);
+    totalFvt  += Math.floor(plot.fvtReward * mult);
+    G.xp += Math.floor(plot.xpReward * mult);
+    G.totalHarvest++;
+    G.questProgress.harvest++;
+    G.p2eStats.fromFarm += Math.floor(plot.fvtReward * mult);
+    addInv(plot.crop, plot.emoji, CROPS[plot.crop]?.name || plot.crop, 'crop', 1, plot.fvtReward);
+    plot.crop = null; plot.emoji = null; plot.plantedAt = 0; plot.growTime = 0;
+    plot.reward = 0; plot.xpReward = 0; plot.fvtReward = 0; plot.nonce = null;
+    count++;
+  });
+  if (!count) return;
+  if (G.xp >= G.xpMax) { G.level++; G.xp -= G.xpMax; G.xpMax = Math.floor(G.xpMax * 1.4); toast(`🎉 Level UP! Level ${G.level}!`, 'suc'); }
+  G.gold += totalGold; G.fvt += totalFvt;
+  renderPlots(); renderHUD(); renderInventory(); updateQuestBar(); checkQuestDone();
+  toast(`🎉 ${count} panen! +${totalGold}🪙 +${totalFvt}FVT`, 'suc');
+  sendWA('harvest_all', {count, totalFvt});
+}
+
+function unlockPlot(idx, cost) {
+  if (G.gold < cost) { toast('❌ Koin kurang!', 'err'); return; }
+  G.gold -= cost; G.plots[idx].locked = false;
+  renderPlots(); renderHUD();
+  toast(`🌍 Lahan #${idx+1} dibuka!`, 'suc');
+  sendWA('unlock_plot', {plotIdx: idx, cost});
+}
+
+// ═══════════════════════════════════════════════════════════
+// INVENTORY
+// ═══════════════════════════════════════════════════════════
+let invFilter = 'all';
+function renderInventory(filter) {
+  if (filter) invFilter = filter;
+  const items = invList(invFilter);
+  const grid = document.getElementById('invGrid');
+  const empty = document.getElementById('invEmpty');
+  document.getElementById('invTotalItems').textContent = Object.values(G.inventory).reduce((s,v) => s+v.qty, 0);
+  document.getElementById('invTotalVal').textContent = Math.floor(invTotalFvt());
+  document.getElementById('invNftCount').textContent = G.ownedNFTs.length;
+  document.getElementById('invbadge').style.display = Object.keys(G.inventory).length > 0 ? 'inline' : 'none';
+  if (!items.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = items.map(it => `
+    <div class="invitem ${G.selInvItem?.id===it.id?'sel':''}" onclick="selInv('${it.id}')">
+      <div class="iemoji">${it.emoji}</div>
+      <div class="iname">${it.name}</div>
+      <div class="iqty">x${it.qty}</div>
+      <div class="itype">${it.type}</div>
+    </div>`).join('');
+}
+
+function filterInv(f, el) {
+  document.querySelectorAll('#pg-inv .bbtn').forEach(b => { b.className = 'bbtn'; b.style.background='var(--s3)'; b.style.color='var(--tx2)'; });
+  el.className = 'bbtn bt'; el.style.background=''; el.style.color='';
+  renderInventory(f);
+}
+
+function selInv(id) {
+  const item = G.inventory[id];
+  if (!item) return;
+  G.selInvItem = {id, ...item};
+  document.getElementById('invActions').style.display = 'block';
+  document.getElementById('invSelName').textContent = `${item.emoji} ${item.name} x${item.qty}`;
+  renderInventory();
+}
+
+function listInventoryItem() {
+  if (!G.selInvItem) return;
+  const item = G.selInvItem;
+  document.getElementById('mdInvSellSub').textContent = `${item.emoji} ${item.name}`;
+  document.getElementById('mdInvMax').textContent = item.qty;
+  document.getElementById('mdInvQty').value = 1;
+  document.getElementById('mdInvQty').max = item.qty;
+  document.getElementById('mdInvPrice').value = Math.max(10, item.fvtValue * 2);
+  updateInvSellFee();
+  closeModal('mdInvSell');
+  openModal('mdInvSell');
+}
+
+function updateInvSellFee() {
+  const qty = parseInt(document.getElementById('mdInvQty').value)||0;
+  const price = parseInt(document.getElementById('mdInvPrice').value)||0;
+  const fee = Math.floor(price * qty * 0.05);
+  const net = price * qty - fee;
+  document.getElementById('mdInvFee').innerHTML = `Total: <strong>${(price*qty).toLocaleString('id')} FVT</strong> · Fee 5%: ${fee.toLocaleString('id')} FVT · Kamu terima: <strong style="color:#4ade80">${net.toLocaleString('id')} FVT</strong>`;
+}
+
+function doInvSell() {
+  if (!G.selInvItem) return;
+  const qty = parseInt(document.getElementById('mdInvQty').value)||0;
+  const price = parseInt(document.getElementById('mdInvPrice').value)||0;
+  if (qty < 1 || price < 10) { toast('❌ Harga min 10 FVT', 'err'); return; }
+  if (!takeInv(G.selInvItem.id, qty)) { toast('❌ Item tidak cukup!', 'err'); return; }
+  const listing = {
+    id: 'l'+Date.now(), emoji: G.selInvItem.emoji,
+    name: `${G.selInvItem.name} x${qty}`, seller: G.name,
+    price, type: G.selInvItem.type, mine: true, qty
+  };
+  G.listings.unshift(listing);
+  G.selInvItem = null;
+  document.getElementById('invActions').style.display = 'none';
+  closeModal('mdInvSell');
+  renderInventory(); renderMarket('all');
+  toast(`✅ ${listing.name} listing berhasil!`, 'suc');
+  sendWA('market_list', {item: G.selInvItem?.id || 'unknown', qty, price});
+}
+
+function useInventoryItem() {
+  if (!G.selInvItem) return;
+  const id = G.selInvItem.id;
+  if (id === 'fert_i') {
+    if (!takeInv(id, 1)) { toast('❌ Tidak ada Pupuk Instan!', 'err'); return; }
+    let cnt = 0;
+    G.plots.forEach(p => { if (p.crop && !p.locked) { p.plantedAt -= p.growTime * 500; cnt++; } });
+    G.selInvItem = null;
+    document.getElementById('invActions').style.display = 'none';
+    renderInventory(); renderPlots();
+    toast(`⚡ Pupuk diterapkan ke ${cnt} lahan!`, 'suc');
+  } else if (id === 'fert_s') {
+    if (!takeInv(id, 1)) { toast('❌ Tidak ada Super Fertilizer!', 'err'); return; }
+    const gp = G.plots.find(p => p.crop && !p.locked);
+    if (gp) { gp.plantedAt -= gp.growTime * 1000; renderPlots(); toast('🧪 Satu lahan selesai instan!', 'suc'); }
+    G.selInvItem = null;
+    document.getElementById('invActions').style.display = 'none';
+    renderInventory();
+  } else { toast('ℹ️ Item ini tidak bisa dipakai langsung', 'inf'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SHOP
+// ═══════════════════════════════════════════════════════════
+function renderShop(filter) {
+  const items = filter === 'all' ? SHOP_ITEMS : SHOP_ITEMS.filter(i => i.cat === filter);
+  const BLBL = {basic:'BASIC', p2w:'⭐ P2W', nft:'💎 WEB3', hot:'🔥 HOT', p2e:'💰 P2E'};
+  const BCLS = {basic:'b-basic', p2w:'b-p2w', nft:'b-nft', hot:'b-hot', p2e:'b-p2e'};
+  document.getElementById('shopGrid').innerHTML = items.map(it => {
+    const cls = it.cur === 'bnb' ? 'w3' : (it.badge === 'p2w' || it.badge === 'hot' ? 'ft' : '');
+    let btn = '';
+    if (it.cur === 'gold') btn = `<button class="bbtn bg" onclick="buyShop('${it.id}')">${it.price} 🪙</button>`;
+    else if (it.cur === 'gems') btn = `<button class="bbtn bm" onclick="buyShop('${it.id}')">${it.price} 💎</button>`;
+    else btn = `<button class="bbtn bb" onclick="buyShopW3('${it.id}')">${it.price} BNB</button>`;
+    return `<div class="sitem ${cls}">
+      <div class="semoji">${it.emoji}</div>
+      <div class="sinfo">
+        <span class="sbadge ${BCLS[it.badge]}">${BLBL[it.badge]}</span>
+        <h3>${it.name}</h3><p>${it.desc}</p>
+      </div>${btn}</div>`;
+  }).join('');
+}
+
+function filterShop(f, el) {
+  document.querySelectorAll('#pg-shop .bbtn').forEach(b => { b.className='bbtn'; b.style.background='var(--s3)'; b.style.color='var(--tx2)'; });
+  el.className='bbtn bt'; el.style.background=''; el.style.color='';
+  renderShop(f);
+}
+
+function buyShop(id) {
+  const it = SHOP_ITEMS.find(s => s.id === id);
+  if (!it) return;
+  if (it.cur === 'gold') {
+    if (G.gold < it.price) { toast('❌ Koin kurang!', 'err'); return; }
+    G.gold -= it.price;
+  } else {
+    if (G.gems < it.price) { toast('❌ Gems kurang!', 'err'); return; }
+    G.gems -= it.price;
+  }
+  applyShopItem(it);
+  renderHUD(); renderShop('all');
+  toast(`✅ ${it.name} dibeli!`, 'suc');
+  sendWA('buy_item', {itemId: id, cost: it.price, cur: it.cur});
+}
+
+function applyShopItem(it) {
+  if (it.id === 'fert_i') addInv('fert_i', '⚡', 'Pupuk Instan', 'tool', 1, 0);
+  else if (it.id === 'fert_s') addInv('fert_s', '🧪', 'Super Fertilizer', 'tool', 1, 0);
+  else if (it.id === 'plot_u') { const lk = G.plots.find(p => p.locked); if (lk) { lk.locked = false; renderPlots(); } }
+  else if (it.id === 'start_b') { G.gold += 1500; G.gems += 50; G.fvt += 500; }
+  else if (it.id === 'prem_b') { G.gold += 5000; G.gems += 500; G.fvt += 2000; G.boostMult = 2; G.boostUntil = Date.now() + 86400000; }
+  else if (it.id === 'vip_b') { G.gold += 10000; G.gems += 1000; G.fvt += 10000; G.boostMult = 3; G.boostUntil = Date.now() + 30*86400000; }
+  renderInventory();
+}
+
+function buyShopW3(id) {
+  if (!G.walletConnected) { toast('🔗 Connect wallet dulu!', 'inf'); switchTab('wal'); return; }
+  const it = SHOP_ITEMS.find(s => s.id === id);
+  if (!it) return;
+  toast('⏳ Konfirmasi di wallet...', 'inf');
+  setTimeout(() => { applyShopItem(it); renderHUD(); toast(`✅ ${it.name} aktif!`, 'suc'); }, 2000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// MARKET
+// ═══════════════════════════════════════════════════════════
+let mktFilter = 'all';
+function renderMarket(filter) {
+  if (filter) mktFilter = filter;
+  document.getElementById('mktVol').textContent = G.marketVol.toLocaleString('id');
+  document.getElementById('mktList').textContent = G.listings.length + MKT_MOCK.length;
+  document.getElementById('mktTrades').textContent = G.marketTrades;
+  const all = [...G.listings, ...MKT_MOCK];
+  let items = all;
+  if (mktFilter === 'crop') items = all.filter(l => l.type === 'crop');
+  else if (mktFilter === 'nft') items = all.filter(l => l.type === 'nft');
+  else if (mktFilter === 'mine') items = all.filter(l => l.mine);
+  else if (mktFilter === 'history') {
+    document.getElementById('mktListings').innerHTML = `
+      <div style="font-size:11px;color:var(--tx2);text-align:center;padding:20px">📜 Riwayat market akan ditampilkan di sini.</div>`;
+    return;
+  }
+  if (!items.length) {
+    document.getElementById('mktListings').innerHTML = `<div style="text-align:center;padding:36px 16px;color:var(--tx3)"><div style="font-size:36px;margin-bottom:10px">📦</div><p>Tidak ada listing</p></div>`;
+    return;
+  }
+  document.getElementById('mktListings').innerHTML = items.map(l => `
+    <div class="mlisting ${l.mine ? 'mine' : ''}">
+      <div class="mlavatar">${l.emoji}</div>
+      <div class="mlinfo">
+        <h4>${l.name}</h4>
+        <p>${l.type === 'nft' ? '💎 NFT' : '🌾 Panen'}</p>
+        <div class="seller">👤 ${l.seller}${l.mine?' <span style="color:var(--gold)">(Kamu)</span>':''}</div>
+      </div>
+      <div class="mlprice">
+        <div class="amt">${l.price.toLocaleString('id')}</div>
+        <div class="cur">FVT</div>
+        <div style="margin-top:4px">
+          ${l.mine
+            ? `<button class="bbtn bse" style="font-size:9px;padding:4px 8px" onclick="cancelListing('${l.id}')">Tarik</button>`
+            : `<button class="bbtn bt" style="font-size:9px;padding:4px 8px" onclick="buyListing('${l.id}')">Beli</button>`}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function filterMkt(f, el) {
+  document.querySelectorAll('#pg-mkt .bbtn').forEach(b => { b.className='bbtn'; b.style.background='var(--s3)'; b.style.color='var(--tx2)'; });
+  el.className='bbtn bt'; el.style.background=''; el.style.color='';
+  renderMarket(f);
+}
+
+function openSellModal() {
+  G.selInvItem = null;
+  const items = invList('crop');
+  if (!items.length) { toast('🎒 Inventory kosong! Panen dulu.', 'inf'); return; }
+  const picker = document.getElementById('sellItemPicker');
+  picker.innerHTML = items.map(it => `
+    <div class="invitem" onclick="selSellItem('${it.id}',this)" style="cursor:pointer">
+      <div class="iemoji">${it.emoji}</div>
+      <div class="iname">${it.name}</div>
+      <div class="iqty">x${it.qty}</div>
+    </div>`).join('');
+  document.getElementById('sellPrice').value = '';
+  document.getElementById('sellQty').value = 1;
+  document.getElementById('sellFeeBox').textContent = 'Pilih item.';
+  openModal('mdSell');
+}
+
+function selSellItem(id, el) {
+  document.querySelectorAll('#sellItemPicker .invitem').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel');
+  G.selInvItem = {id, ...G.inventory[id]};
+  document.getElementById('sellQty').max = G.inventory[id]?.qty || 1;
+  updateSellFee();
+}
+
+function updateSellFee() {
+  const qty = parseInt(document.getElementById('sellQty').value)||0;
+  const price = parseInt(document.getElementById('sellPrice').value)||0;
+  if (!price) { document.getElementById('sellFeeBox').textContent = 'Masukkan harga.'; return; }
+  const fee = Math.floor(qty * price * 0.05);
+  const net = qty * price - fee;
+  document.getElementById('sellFeeBox').innerHTML = `Total: <strong>${(qty*price).toLocaleString('id')} FVT</strong> · Fee 5%: ${fee.toLocaleString('id')} · Terima: <strong style="color:#4ade80">${net.toLocaleString('id')} FVT</strong>`;
+}
+
+function confirmSell() {
+  if (!G.selInvItem) { toast('❌ Pilih item dulu!', 'err'); return; }
+  const qty = parseInt(document.getElementById('sellQty').value)||0;
+  const price = parseInt(document.getElementById('sellPrice').value)||0;
+  if (qty < 1 || price < 10) { toast('❌ Harga min 10 FVT', 'err'); return; }
+  if (price > 9999999) { AC.flag('PRICE_INJECT','abnormal sell price'); return; }
+  const it = G.selInvItem;
+  if (!takeInv(it.id, qty)) { toast('❌ Item tidak cukup di inventory!', 'err'); return; }
+  G.listings.unshift({
+    id:'l'+Date.now(), emoji:it.emoji,
+    name:`${it.name} x${qty}`, seller:G.name,
+    price, type:it.type, mine:true, qty
+  });
+  closeModal('mdSell');
+  renderInventory(); renderMarket('all');
+  toast(`✅ ${it.name} x${qty} listing berhasil!`, 'suc');
+  sendWA('market_list', {itemId:it.id, qty, price});
+}
+
+function buyListing(id) {
+  const l = [...G.listings, ...MKT_MOCK].find(x => x.id === id);
+  if (!l) return;
+  if (G.fvt < l.price) { toast('❌ FVT tidak cukup!', 'err'); return; }
+  G.fvt -= l.price;
+  G.marketVol += l.price; G.marketTrades++;
+  // Add to inventory
+  if (l.type === 'crop') {
+    const cKey = Object.keys(CROPS).find(k => CROPS[k].name === l.name.split(' x')[0]);
+    if (cKey) addInv(cKey, CROPS[cKey].emoji, CROPS[cKey].name, 'crop', parseInt(l.name.split(' x')[1])||1, CROPS[cKey].fvtReward);
+  }
+  // Remove from mock / listings
+  const li = MKT_MOCK.findIndex(x => x.id === id);
+  if (li >= 0) MKT_MOCK.splice(li, 1);
+  const li2 = G.listings.findIndex(x => x.id === id);
+  if (li2 >= 0) G.listings.splice(li2, 1);
+  renderMarket('all'); renderInventory(); renderHUD();
+  toast(`✅ ${l.name} dibeli!`, 'suc');
+  sendWA('market_buy', {listingId: id});
+}
+
+function cancelListing(id) {
+  const li = G.listings.findIndex(x => x.id === id);
+  if (li < 0) { toast('❌ Listing tidak ditemukan', 'err'); return; }
+  const l = G.listings[li];
+  // Return item to inventory
+  const cKey = Object.keys(CROPS).find(k => CROPS[k].name === l.name.split(' x')[0]);
+  if (cKey) addInv(cKey, CROPS[cKey].emoji, CROPS[cKey].name, 'crop', l.qty || 1, CROPS[cKey].fvtReward);
+  G.listings.splice(li, 1);
+  renderMarket('all'); renderInventory();
+  toast('📦 Listing dibatalkan, item dikembalikan ke inventory', 'inf');
+  sendWA('cancel_listing', {listingId: id});
+}
+
+// ═══════════════════════════════════════════════════════════
+// NFT
+// ═══════════════════════════════════════════════════════════
+const RAR = {common:'r-c', rare:'r-r', epic:'r-e', legendary:'r-l'};
+const RARL = {common:'🟢 Common', rare:'🔵 Rare', epic:'🟣 Epic', legendary:'🟡 Legendary'};
+
+function renderNFTGrid(tab) {
+  const owned = (id) => G.ownedNFTs.includes(id);
+  if (tab === 'col') {
+    document.getElementById('nftColGrid').innerHTML = NFTS.map(n => `
+      <div class="nftcard ${owned(n.id)?'owned':''}" onclick="showNFT('${n.id}')">
+        <span class="nft-rar ${RAR[n.rarity]}">${RARL[n.rarity]}</span>
+        <div class="nft-e">${n.emoji}</div>
+        <div class="nft-nm">${n.name}</div>
+        <div class="nft-bn">${n.bonus}</div>
+        <div class="nft-pt">${owned(n.id) ? '✅ Dimiliki' : n.price+' BNB'}</div>
+        ${!owned(n.id) ? `<button class="bbtn bb" style="margin-top:7px;width:100%;font-size:10px" onclick="event.stopPropagation();buyNFT('${n.id}')">Beli</button>` : ''}
+      </div>`).join('');
+  } else if (tab === 'mint') {
+    document.getElementById('nftMintGrid').innerHTML = NFTS.filter(n => !owned(n.id)).map(n => `
+      <div class="nftcard" onclick="showNFT('${n.id}')">
+        <span class="nft-rar ${RAR[n.rarity]}">${RARL[n.rarity]}</span>
+        <div class="nft-e">${n.emoji}</div>
+        <div class="nft-nm">${n.name}</div>
+        <div class="nft-bn">${n.bonus}</div>
+        <div class="nft-pt">Mint: ${n.price} BNB + gas</div>
+        <button class="bbtn bb" style="margin-top:7px;width:100%;font-size:10px" onclick="event.stopPropagation();buyNFT('${n.id}')">⚗️ Mint</button>
+      </div>`).join('');
+  } else if (tab === 'owned') {
+    const own = NFTS.filter(n => owned(n.id));
+    document.getElementById('nftOwnedGrid').innerHTML = own.length ? own.map(n => `
+      <div class="nftcard owned" onclick="showNFT('${n.id}')">
+        <div class="nft-e">${n.emoji}</div>
+        <div class="nft-nm">${n.name}</div>
+        <div class="nft-bn">${n.bonus}</div>
+        <div class="nft-pt">✅ Aktif</div>
+        <div style="display:flex;gap:5px;margin-top:7px">
+          <button class="bbtn bt" style="flex:1;font-size:9px" onclick="event.stopPropagation();nftSell('${n.id}')">Jual</button>
+          <button class="bbtn" style="flex:1;font-size:9px;background:var(--s3);color:var(--tx2)" onclick="event.stopPropagation();stakeNFT('${n.id}')">Stake</button>
+        </div>
+      </div>`).join('') : `<div style="text-align:center;padding:36px;color:var(--tx3)"><div style="font-size:40px;margin-bottom:10px">💎</div><p>Belum ada NFT</p></div>`;
+  } else if (tab === 'stake') {
+    renderStakeGrid();
+  }
+}
+
+function nftTab(tab, el) {
+  document.querySelectorAll('#pg-nft .bbtn:not(.bbtn-inside)').forEach(b => { b.className='bbtn'; b.style.background='var(--s3)'; b.style.color='var(--tx2)'; });
+  el.className='bbtn bt';
+  ['col','mint','owned','stake'].forEach(t => document.getElementById('nft-'+t).style.display = t===tab?'block':'none');
+  renderNFTGrid(tab);
+}
+
+function renderStakeGrid() {
+  const own = NFTS.filter(n => G.ownedNFTs.includes(n.id));
+  document.getElementById('stakeTotal').textContent = (G.p2eStats.fromFarm * 0.01).toFixed(0) + ' FVT';
+  document.getElementById('stakeGrid').innerHTML = own.length ? own.map(n => `
+    <div class="card row" style="margin-bottom:7px">
+      <div style="font-size:26px">${n.emoji}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:800">${n.name}</div>
+        <div style="font-size:10px;color:var(--tx2)">APY: ${n.apy}% · ${RARL[n.rarity]}</div>
+      </div>
+      <button class="bbtn bt" style="font-size:10px" onclick="claimStake('${n.id}')">Claim</button>
+    </div>`).join('') : `<div style="text-align:center;padding:30px;color:var(--tx3)">Stake NFT untuk dapat pasif FVT</div>`;
+}
+
+function stakeNFT(id) { toast('📌 NFT di-stake! Claim reward tiap 24 jam.', 'suc'); }
+function claimStake(id) { const n = NFTS.find(x => x.id===id); const r = Math.floor(50 * n.apy/5); G.fvt += r; renderHUD(); toast(`💰 Klaim staking +${r} FVT!`, 'suc'); }
+function nftSell(id) { const n = NFTS.find(x => x.id===id); if (!n) return; G.listings.unshift({id:'ln'+Date.now(),emoji:n.emoji,name:n.name+' NFT',seller:G.name,price:Math.floor(parseFloat(n.price)*10000),type:'nft',mine:true,qty:1}); toast(`🏷️ ${n.name} listing di market!`, 'suc'); renderMarket('all'); }
+
+function showNFT(id) {
+  const n = NFTS.find(x => x.id===id);
+  if (!n) return;
+  const own = G.ownedNFTs.includes(id);
+  document.getElementById('mdNftContent').innerHTML = `
+    <div class="mhandle"></div>
+    <h2>${n.emoji} ${n.name}</h2>
+    <div class="msub">${RARL[n.rarity]} · APY ${n.apy}%</div>
+    <div style="font-size:50px;text-align:center;margin:14px 0;animation:bob 2s ease-in-out infinite">${n.emoji}</div>
+    <div class="card info-table" style="margin-bottom:11px">
+      <div class="ir"><span>Bonus</span><span>${n.bonus}</span></div>
+      <div class="ir"><span>Rarity</span><span>${RARL[n.rarity]}</span></div>
+      <div class="ir"><span>Harga</span><span>${n.price} BNB</span></div>
+      <div class="ir"><span>APY Staking</span><span>${n.apy}% FVT</span></div>
+      <div class="ir"><span>Status</span><span>${own?'✅ Dimiliki':'Belum dimiliki'}</span></div>
+    </div>
+    ${!own ? `<button class="pbtn gold" onclick="buyNFT('${n.id}');closeModal('mdNft')">🛒 Beli · ${n.price} BNB</button>` : ''}`;
+  openModal('mdNft');
+}
+
+function buyNFT(id) {
+  if (!G.walletConnected) { toast('🔗 Connect wallet untuk beli NFT!', 'inf'); switchTab('wal'); return; }
+  toast('⏳ Konfirmasi di wallet...', 'inf');
+  setTimeout(() => {
+    if (!G.ownedNFTs.includes(id)) {
+      G.ownedNFTs.push(id);
+      const n = NFTS.find(x => x.id===id);
+      addInv(id, n.emoji, n.name, 'nft', 1, parseFloat(n.price)*10000);
+      applyNFTBonus(id);
+      addTx('out', n.emoji, `Mint NFT: ${n.name}`, `-${n.price} BNB`, 'baru saja');
+      renderNFTGrid('col'); renderInventory();
+      toast(`✅ NFT ${n.name} berhasil!`, 'suc');
+    }
+  }, 2200);
+}
+
+function applyNFTBonus(id) {
+  if (id === 'grand_castle') G.plots.slice(8,13).forEach(p => p.locked = false);
+  else if (id === 'auto_harvester') {
+    setInterval(() => {
+      G.plots.forEach((p, i) => {
+        if (!p.crop || p.locked) return;
+        if ((Date.now()-p.plantedAt)/1000 >= p.growTime) {
+          G.fvt += p.fvtReward; G.gold += p.reward; G.totalHarvest++;
+          addInv(p.crop, p.emoji, CROPS[p.crop]?.name||p.crop, 'crop', 1, p.fvtReward);
+          p.crop=null; p.emoji=null; p.plantedAt=0; p.growTime=0; p.reward=0; p.fvtReward=0; p.nonce=null;
+        }
+      });
+      renderPlots(); renderHUD();
+    }, 30 * 60 * 1000);
+  }
+  renderPlots();
+}
+
+// ═══════════════════════════════════════════════════════════
+// WALLET
+// ═══════════════════════════════════════════════════════════
+async function connectWallet() {
+  toast('🔗 Menghubungkan wallet...', 'inf');
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accs = await window.ethereum.request({method:'eth_requestAccounts'});
+      const addr = accs[0];
+      const prov = new ethers.BrowserProvider(window.ethereum);
+      const bal = await prov.getBalance(addr);
+      G.walletAddr = addr;
+      G.walletBal = parseFloat(ethers.formatEther(bal));
+      G.walletConnected = true;
+      finishWalletConnect();
+      return;
+    } catch(e) { console.log('MetaMask rejected'); }
+  }
+  // Demo fallback
+  setTimeout(() => {
+    G.walletAddr = '0x742d35Cc6634C0532925a3b8D4C9E3f67c3f4a9';
+    G.walletBal = 0.247;
+    G.walletConnected = true;
+    finishWalletConnect();
+  }, 1600);
+}
+
+async function connectWalletWC() {
+  toast('🔗 WalletConnect — demo mode', 'inf');
+  setTimeout(() => {
+    G.walletAddr = '0x39Fe...c4A2';
+    G.walletBal = 0.1;
+    G.walletConnected = true;
+    finishWalletConnect();
+  }, 2000);
+}
+
+function finishWalletConnect() {
+  document.getElementById('walDiscon').style.display = 'none';
+  document.getElementById('walCon').style.display = 'block';
+  const short = G.walletAddr.length > 14 ? G.walletAddr.slice(0,8)+'...'+G.walletAddr.slice(-6) : G.walletAddr;
+  document.getElementById('walAddr').textContent = short;
+  document.getElementById('walBnb').textContent = G.walletBal.toFixed(3);
+  document.getElementById('walUSD').textContent = (G.walletBal * 625).toFixed(2);
+  document.getElementById('walFvt').textContent = G.fvt.toLocaleString('id');
+  document.getElementById('walNftCount').textContent = G.ownedNFTs.length;
+  document.getElementById('topupAddr').textContent = G.walletAddr;
+  document.getElementById('s2Wallet').textContent = '✅ ' + short;
+  renderTxList(); updateP2E();
+  toast('✅ Wallet terhubung!', 'suc');
+  sendWA('wallet_connect', {addr: G.walletAddr});
+}
+
+function disconnectWallet() {
+  G.walletConnected = false; G.walletAddr = '';
+  document.getElementById('walDiscon').style.display = 'block';
+  document.getElementById('walCon').style.display = 'none';
+  toast('🔌 Wallet terputus', 'inf');
+}
+
+function copyAddr() {
+  navigator.clipboard?.writeText(G.walletAddr).then(() => toast('📋 Alamat disalin!', 'suc'));
+}
+
+function addTx(type, emoji, name, amount, time) {
+  G.txHistory.unshift({type, emoji, name, amount, time, hash:'0x'+Math.random().toString(16).slice(2,12)});
+  if (G.walletConnected) renderTxList();
+}
+
+function renderTxList() {
+  document.getElementById('txList').innerHTML = G.txHistory.slice(0, 12).map(tx => `
+    <div class="txitem">
+      <div class="txico ${tx.type}">${tx.emoji}</div>
+      <div class="txinfo">
+        <h4>${tx.name}</h4><p>${tx.time}</p>
+        <div class="txhash">${tx.hash}</div>
+      </div>
+      <div class="txamt ${tx.type}">${tx.amount}</div>
+    </div>`).join('');
+}
+
+// ── TOPUP ──
+let topupCur = 'bnb';
+function topupTab(t, el) {
+  document.querySelectorAll('.topup-tab').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('topup-crypto').style.display = t === 'crypto' ? 'block' : 'none';
+  document.getElementById('topup-fiat').style.display = t === 'fiat' ? 'block' : 'none';
+}
+function selTopup(cur, el) {
+  topupCur = cur;
+  document.querySelectorAll('.cryp-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function calcTopupIDR() {
+  const idr = parseInt(document.getElementById('topupIDR').value)||0;
+  const fvt = Math.floor(idr / 800);
+  document.getElementById('topupIDRResult').innerHTML = `Rp ${idr.toLocaleString('id')} → <strong style="color:#4ade80">${fvt.toLocaleString('id')} FVT</strong>`;
+}
+function processTopup() {
+  toast('📥 Menunggu konfirmasi pembayaran...', 'inf');
+  setTimeout(() => { G.fvt += 1000; renderHUD(); toast('✅ +1000 FVT dikreditkan! (demo)', 'suc'); closeModal('mdTopup'); updateP2E(); addTx('in','📥','Topup FVT','+1000 FVT','baru saja'); }, 2000);
+}
+
+// ── WITHDRAW ──
+function calcWithdraw() {
+  const amt = parseInt(document.getElementById('wdAmt').value)||0;
+  const fee = Math.max(10, Math.floor(amt * 0.02));
+  const net = amt - fee;
+  document.getElementById('wdFeeBox').innerHTML = `Jumlah: <strong>${amt.toLocaleString('id')} FVT</strong> · Fee (2%): ${fee.toLocaleString('id')} FVT · Kamu terima: <strong style="color:#4ade80">${Math.max(0,net).toLocaleString('id')} FVT</strong>`;
+  document.getElementById('wdWarn').style.display = amt > 0 ? 'block' : 'none';
+}
+function confirmWithdraw() {
+  const addr = document.getElementById('wdAddr').value.trim();
+  const amt  = parseInt(document.getElementById('wdAmt').value)||0;
+  if (!addr.startsWith('0x') || addr.length < 42) { toast('❌ Alamat tidak valid!', 'err'); return; }
+  if (amt < 100) { toast('❌ Min. withdraw 100 FVT', 'err'); return; }
+  if (amt > G.fvt) { toast('❌ FVT tidak cukup!', 'err'); return; }
+  if (!G.walletConnected) { toast('🔗 Connect wallet dulu!', 'inf'); return; }
+  toast('⏳ Memproses withdraw...', 'inf');
+  setTimeout(() => {
+    G.fvt -= amt; G.p2eStats.withdrawn += amt;
+    renderHUD(); updateP2E();
+    addTx('out','📤',`Withdraw ${amt} FVT`,`-${amt} FVT`,'baru saja');
+    closeModal('mdWithdraw');
+    toast(`✅ ${amt} FVT withdraw berhasil!`, 'suc');
+    sendWA('withdraw', {addr, amount: amt});
+  }, 2500);
+}
+
+// ── SEND ──
+function confirmSend() {
+  const to  = document.getElementById('sendTo').value.trim();
+  const amt = parseInt(document.getElementById('sendAmt').value)||0;
+  if (!to) { toast('❌ Masukkan tujuan!', 'err'); return; }
+  if (amt < 1 || amt > G.fvt) { toast('❌ Jumlah tidak valid!', 'err'); return; }
+  G.fvt -= amt; renderHUD();
+  addTx('out','➡️',`Kirim ke ${to}`,`-${amt} FVT`,'baru saja');
+  closeModal('mdSend');
+  toast(`✅ ${amt} FVT dikirim ke ${to}!`, 'suc');
+  sendWA('send_fvt', {to, amount: amt});
+}
+
+// ── SWAP ──
+const RATES = {bnb:{fvt:12500,usdt:625}, fvt:{bnb:0.00008,usdt:0.05}, usdt:{bnb:0.0016,fvt:20}};
+function calcSwap() {
+  const from = document.getElementById('swapFrom').value;
+  const to   = document.getElementById('swapTo').value;
+  const amt  = parseFloat(document.getElementById('swapAmt').value)||0;
+  const rate = RATES[from]?.[to] || 1;
+  const result = (amt * rate * 0.97).toFixed(4); // 3% slippage
+  document.getElementById('swapResult').textContent = result;
+  document.getElementById('swapInfo').innerHTML = `Rate: 1 ${from.toUpperCase()} = ${rate} ${to.toUpperCase()} · Slippage 3% · Gas ~0.0005 BNB`;
+}
+function confirmSwap() {
+  const from = document.getElementById('swapFrom').value;
+  const to   = document.getElementById('swapTo').value;
+  const amt  = parseFloat(document.getElementById('swapAmt').value)||0;
+  if (!amt) { toast('❌ Masukkan jumlah!', 'err'); return; }
+  toast('🔄 Swap diproses...', 'inf');
+  setTimeout(() => {
+    const rate = RATES[from]?.[to] || 1;
+    const result = (amt * rate * 0.97);
+    if (to === 'fvt') G.fvt += Math.floor(result);
+    closeModal('mdSwap'); renderHUD();
+    toast(`✅ Swap ${amt} ${from.toUpperCase()} → ${result.toFixed(2)} ${to.toUpperCase()}`, 'suc');
+    addTx('in','🔄',`Swap ${from.toUpperCase()}→${to.toUpperCase()}`,`+${result.toFixed(2)} ${to.toUpperCase()}`,'baru saja');
+  }, 2000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// P2E STATS
+// ═══════════════════════════════════════════════════════════
+function updateP2E() {
+  const total = G.fvt + G.p2eStats.withdrawn;
+  document.getElementById('p2eTotalFvt').innerHTML = `${total.toLocaleString('id')} <span>FVT</span>`;
+  document.getElementById('p2eUSD').textContent = (total * G.fvtRate).toFixed(2);
+  document.getElementById('fvtRate').textContent = G.fvtRate;
+  document.getElementById('p2eRateBar').textContent = `Saldo: ${G.fvt.toLocaleString('id')} FVT · ${G.walletConnected ? 'Wallet terhubung ✅' : 'Connect wallet untuk withdraw'}`;
+  document.getElementById('s2TotalFvt').textContent = total.toLocaleString('id') + ' FVT';
+  document.getElementById('s2FvtFarm').textContent = G.p2eStats.fromFarm.toLocaleString('id') + ' FVT';
+  document.getElementById('s2FvtTrade').textContent = G.p2eStats.fromTrade.toLocaleString('id') + ' FVT';
+  document.getElementById('s2FvtRef').textContent = G.p2eStats.fromRef.toLocaleString('id') + ' FVT';
+  document.getElementById('s2Withdraw').textContent = G.p2eStats.withdrawn.toLocaleString('id') + ' FVT';
+  document.getElementById('walFvt').textContent = G.fvt.toLocaleString('id');
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUESTS
+// ═══════════════════════════════════════════════════════════
+function updateQuestBar() {
+  const prog = G.questProgress.harvest;
+  document.getElementById('questProg').textContent = `${prog}/5`;
+  document.getElementById('questDesc').textContent = G.questDone
+    ? '✅ Semua misi selesai! Reset besok.'
+    : `Panen ${5 - prog} lagi · +300🪙 +20💎 +50FVT`;
+}
+
+function checkQuestDone() {
+  if (!G.questDone && G.questProgress.harvest >= 5) {
+    G.questDone = true;
+    G.gold += 300; G.gems += 20; G.fvt += 50;
+    renderHUD(); updateP2E();
+    toast('🎉 Misi Harian selesai! +300🪙 +20💎 +50FVT', 'suc');
+  }
+}
+
+function openQuestModal() {
+  // checkin grid
+  document.getElementById('mdStreak').textContent = G.streak;
+  const ciGrid = document.getElementById('checkinGrid');
+  ciGrid.innerHTML = Array.from({length:7}, (_,i) => {
+    const r = [50,80,120,200,300,500,'💎10'][i];
+    const done = i < G.streak % 7, isToday = i === G.streak % 7;
+    return `<div style="background:var(--s3);border:1px solid ${isToday?'var(--gold)':done?'var(--g)':'var(--b1)'};border-radius:9px;padding:7px 4px;text-align:center;font-size:9px">
+      <div style="font-size:16px">${done?'✅':isToday?'🎁':'🔒'}</div>
+      <div style="color:var(--gold);font-weight:800;margin-top:2px">${typeof r==='number'?'🪙'+r:r}</div>
+    </div>`;
+  }).join('');
+  // quests
+  const quests = [
+    {ico:'🌾', name:'Panen 5x', prog:`${G.questProgress.harvest}/5`, done:G.questProgress.harvest>=5, reward:'+300🪙 +50 FVT'},
+    {ico:'🌱', name:'Tanam 3x', prog:`${G.questProgress.plant}/3`, done:G.questProgress.plant>=3, reward:'+150🪙'},
+    {ico:'🔄', name:'1 Trade di Market', prog:'0/1', done:false, reward:'+100 FVT'},
+    {ico:'👥', name:'Ajak 1 Teman', prog:'0/1', done:false, reward:'+200 FVT'},
+  ];
+  document.getElementById('questList').innerHTML = quests.map(q => `
+    <div style="background:var(--bg);border:1px solid ${q.done?'var(--g)':'var(--b1)'};border-radius:11px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:9px">
+      <div style="font-size:20px">${q.ico}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:800">${q.name}</div>
+        <div style="font-size:10px;color:var(--tx2)">Reward: ${q.reward}</div>
+        <div style="height:4px;background:rgba(255,255,255,.06);border-radius:4px;margin-top:5px">
+          <div style="height:100%;background:var(--gl);width:${q.done?100:0}%;border-radius:4px"></div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:${q.done?'var(--gl)':'var(--tx3)'}">${q.done?'✅':q.prog}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// LEADERBOARD
+// ═══════════════════════════════════════════════════════════
+function showLB(mode, el) {
+  document.querySelectorAll('#pg-lb .bbtn').forEach(b => { b.className='bbtn'; b.style.background='var(--s3)'; b.style.color='var(--tx2)'; });
+  if (el) { el.className='bbtn bt'; el.style.background=''; el.style.color=''; }
+  renderLeaderboard(mode);
+}
+
+function renderLeaderboard(mode) {
+  const me = {rank:0, name:G.name, emoji:'👨‍🌾', harvest:G.totalHarvest, level:G.level, nft:G.ownedNFTs.length, fvt:G.fvt, isMe:true};
+  const all = [...LB_MOCK, me];
+  all.sort((a,b) => mode==='fvt' ? b.fvt-a.fvt : mode==='level' ? b.level-a.level : mode==='nft' ? b.nft-a.nft : b.harvest-a.harvest);
+  all.forEach((p,i) => p.rank=i+1);
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('lbList').innerHTML = all.map(p => `
+    <div class="lbitem ${p.rank<=3?'t'+p.rank:''} ${p.isMe?'me':''}">
+      <div class="lbrank">${p.rank<=3?medals[p.rank-1]:p.rank}</div>
+      <div class="lbav">${p.emoji}</div>
+      <div class="lbdata">
+        <div class="lbnm">${p.name}${p.isMe?'<span class="me-tag">KAMU</span>':''}</div>
+        <div class="lbsub">Lv.${p.level} · ${p.nft} NFT</div>
+      </div>
+      <div class="lbsc">
+        ${mode==='fvt'?p.fvt.toLocaleString('id'):mode==='level'?'Lv.'+p.level:mode==='nft'?p.nft:p.harvest.toLocaleString('id')}
+        <div style="font-size:9px;color:var(--tx2);font-weight:700">${mode==='fvt'?'FVT':mode==='level'?'':mode==='nft'?'NFT':'panen'}</div>
+      </div>
+    </div>`).join('');
+  const meEntry = all.find(p => p.isMe);
+  if (meEntry) {
+    document.getElementById('myRank').textContent = '#' + meEntry.rank;
+    document.getElementById('myRankSub').textContent = meEntry.fvt.toLocaleString('id') + ' FVT';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// REFERRAL
+// ═══════════════════════════════════════════════════════════
+function openRefModal() {
+  const tg = window.Telegram?.WebApp;
+  const botName = 'FarmVerseBot';
+  const link = `https://t.me/${botName}?start=${G.userId}`;
+  document.getElementById('refLink').textContent = link;
+  openModal('mdRef');
+}
+function shareRef() {
+  const tg = window.Telegram?.WebApp;
+  const link = document.getElementById('refLink').textContent;
+  if (tg?.openTelegramLink) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('🌾 Join FarmVerse P2E! Dapat FVT Token gratis!')}`);
+  else navigator.clipboard?.writeText(link).then(() => toast('📋 Link disalin!', 'suc'));
+}
+
+// ═══════════════════════════════════════════════════════════
+// BACKEND SYNC
+// ═══════════════════════════════════════════════════════════
+function sendWA(action, data) {
+  const tg = window.Telegram?.WebApp;
+  if (!tg) return;
+  try { tg.sendData(JSON.stringify({action, data, userId: G.userId, ts: Date.now()})); }
+  catch (e) {}
+}
+
+function applyStateSync(msg) {
+  G.gold = msg.gold ?? G.gold;
+  G.gems = msg.gems ?? G.gems;
+  G.fvt  = msg.fvtBalance ?? G.fvt;
+  G.level = msg.level ?? G.level;
+  G.xp = msg.xp ?? G.xp;
+  G.xpMax = msg.xpMax ?? G.xpMax;
+  G.totalHarvest = msg.totalHarvest ?? G.totalHarvest;
+  G.streak = msg.streak ?? G.streak;
+  G.boostMult = msg.boostMultiplier ?? G.boostMult;
+  if (msg.plots) applyPlotUpdate({plots: msg.plots});
+  if (msg.inventory) {
+    G.inventory = {};
+    msg.inventory.forEach(it => { G.inventory[it.item_id] = {emoji:it.emoji, name:it.item_id, type:it.item_type, qty:it.quantity, fvtValue: CROPS[it.item_id]?.fvtReward || 0}; });
+  }
+  if (msg.ownedNFTs) G.ownedNFTs = msg.ownedNFTs;
+  renderAll();
+}
+
+function applyPlotUpdate(msg) {
+  if (!msg.plots) return;
+  msg.plots.forEach(sp => {
+    const p = G.plots[sp.slot];
+    if (!p) return;
+    p.locked = sp.locked;
+    p.crop = sp.cropId || null;
+    p.plantedAt = sp.plantedAt || 0; // already ms from server
+    p.growTime = sp.growTime || 0;
+    p.reward = sp.reward || 0;
+    p.xpReward = sp.xpReward || 0;
+    p.nonce = sp.nonce || null;
+    if (p.crop && CROPS[p.crop]) p.emoji = CROPS[p.crop].emoji;
+  });
+  renderPlots();
+}
+
+function applyHarvestResult(msg) {
+  if (msg.reward) { G.gold += msg.reward; toast(`+${msg.reward}🪙 +${msg.xpEarned||0}XP`, 'suc'); }
+  if (msg.leveledUp) toast(`🎉 Level UP! Level ${msg.newLevel}!`, 'suc');
+  if (msg.plots) applyPlotUpdate({plots: msg.plots});
+  renderHUD();
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS & MODALS
+// ═══════════════════════════════════════════════════════════
+document.getElementById('tabbar').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  const p = tab.dataset.p;
+  switchTab(p);
+});
+
+function switchTab(p) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.p===p));
+  document.querySelectorAll('.page').forEach(pg => pg.classList.toggle('on', pg.id==='pg-'+p));
+  if (p === 'inv') renderInventory();
+  if (p === 'p2e') updateP2E();
+  if (p === 'lb') renderLeaderboard('harvest');
+}
+
+function openModal(id) {
+  if (id === 'mdQuest') openQuestModal();
+  if (id === 'mdRef') openRefModal();
+  document.getElementById(id).classList.add('on');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('on'); }
+document.addEventListener('click', e => { if (e.target.classList.contains('overlay')) closeModal(e.target.id); });
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+let toastT;
+function toast(msg, type='suc') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast on ' + type;
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2400);
+}
+
+function spawnPop(el, text) {
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'coinpop'; pop.textContent = text;
+  pop.style.left = (r.left + r.width/2 - 18) + 'px';
+  pop.style.top  = (r.top - 8) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 850);
+}
+
+function fmtTime(s) {
+  if (s >= 3600) return Math.floor(s/3600) + 'j' + Math.floor((s%3600)/60) + 'm';
+  if (s >= 60)   return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+  return s + 'd';
+}
+</script>
+</body>
+</html>
